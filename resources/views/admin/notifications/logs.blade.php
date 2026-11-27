@@ -1,0 +1,48 @@
+@extends('layouts.admin')
+
+@section('content')
+    <div class="card shell-card mb-4">
+        <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h1 class="h3 mb-1">Notification Logs</h1>
+            </div>
+            <a href="{{ route('admin.notifications.index') }}" class="btn btn-outline-secondary">Back to notifications</a>
+        </div>
+    </div>
+
+    <div class="card shell-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Recipient</th>
+                        <th>Template</th>
+                        <th>Channel</th>
+                        <th>Status</th>
+                        <th>Error</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($logs as $log)
+                        <tr>
+                            <td>{{ $log->displayRecipient() }}</td>
+                            <td>{{ $log->displayTemplateName() }}</td>
+                            <td>{{ $log->displayChannel() }}</td>
+                            <td>{{ ucfirst($log->status) }}</td>
+                            <td>{{ $log->displayErrorMessage() }}</td>
+                            <td>{{ \App\Support\StoreDate::dateTime($log->created_at) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-secondary py-5">No logs found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="card-body">
+            @include('partials.pagination', ['paginator' => $logs])
+        </div>
+    </div>
+@endsection

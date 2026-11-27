@@ -1,0 +1,68 @@
+@extends('layouts.storefront')
+
+@section('content')
+    <main class="sf-page">
+        @php($filterQuery = array_filter([
+            'pincode' => $pincode ?? null,
+            'vendor_id' => $selectedVendorId ?? request('vendor_id'),
+        ], fn ($value) => filled($value)))
+        @php($emptyMessage = config('ui_messages.no_products'))
+        <section class="container-fluid px-3 px-lg-4 py-3">
+            <nav class="sf-breadcrumbs"><a href="{{ route('user.home') }}">Home</a> <span>&rsaquo;</span> {{ $category->category_name }}</nav>
+
+            <div class="sf-category-layout">
+                <aside class="sf-sidepanel sf-category-sidebar">
+                    <h4 class="mb-3">{{ $category->category_name }}</h4>
+                    <div class="sf-side-links">
+                        <a href="{{ route('storefront.category', array_merge(['category' => $category], $filterQuery)) }}" class="d-flex align-items-center gap-2 {{ empty($selectedSubcategory) ? 'active' : '' }}">
+                            <img src="{{ \App\Support\StoreImage::category($category) }}" alt="{{ $category->category_name }}" onerror="{{ \App\Support\StoreImage::onError('category') }}">
+                            <span>All</span>
+                        </a>
+                        @foreach ($category->subcategories as $subcategory)
+                            <a href="{{ route('storefront.category', array_merge(['category' => $category, 'subcategory' => $subcategory->id], $filterQuery)) }}" class="d-flex align-items-center gap-2 {{ ($selectedSubcategory?->id ?? null) === $subcategory->id ? 'active' : '' }}">
+                                <img src="{{ \App\Support\StoreImage::subcategory($subcategory) }}" alt="{{ $subcategory->subcategory_name }}" onerror="{{ \App\Support\StoreImage::onError('category') }}">
+                                <span>{{ $subcategory->subcategory_name }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </aside>
+
+                <section>
+                    <div class="sf-page-title">
+                        <div>
+                            <h2>Buy {{ $category->category_name }} Online</h2>
+                            <p>
+                                @if ($selectedSubcategory)
+                                    Showing only {{ $selectedSubcategory->subcategory_name }} products.
+                                @else
+                                    Browse products across all subcategories in this category.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="sf-filter-row">
+                        <a href="{{ route('storefront.category', array_merge(['category' => $category], $filterQuery)) }}" class="sf-filter-pill {{ empty($selectedSubcategory) ? 'active' : '' }}">All</a>
+                        @foreach ($category->subcategories as $subcategory)
+                            <a href="{{ route('storefront.category', array_merge(['category' => $category, 'subcategory' => $subcategory->id], $filterQuery)) }}" class="sf-filter-pill d-inline-flex align-items-center gap-2 {{ ($selectedSubcategory?->id ?? null) === $subcategory->id ? 'active' : '' }}">
+                                <img src="{{ \App\Support\StoreImage::subcategory($subcategory) }}" alt="{{ $subcategory->subcategory_name }}" style="width:18px;height:18px;border-radius:6px;object-fit:cover;" onerror="{{ \App\Support\StoreImage::onError('category') }}">
+                                <span>{{ $subcategory->subcategory_name }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+
+                    <div class="{{ $selectedSubcategory ? 'sf-grid sf-product-grid' : 'sf-category-product-sections' }} js-product-list" id="product-list">
+                        @if ($selectedSubcategory)
+                            @include('storefront.partials.product-grid', ['products' => $products, 'emptyMessage' => $emptyMessage])
+                        @else
+                            @include('storefront.partials.product-sections', [
+                                'sections' => $categoryPageSections ?? [],
+                                'emptyMessage' => $emptyMessage,
+                            ])
+                        @endif
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+@endsection

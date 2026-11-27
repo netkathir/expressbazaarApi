@@ -1,0 +1,188 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\DeliveryConfig;
+use App\Models\RegionZone;
+use App\Models\Vendor;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class RegionZoneController extends Controller
+{
+    public function index(Request $request)
+    {
+        $zones = RegionZone::query()
+            ->with(['country', 'city'])
+            ->when($request->filled('country_id'), fn ($query) => $query->where('country_id', $request->integer('country_id')))
+            ->when($request->filled('state'), fn ($query) => $query->whereHas('city', fn ($cityQuery) => $cityQuery->where('state', $request->string('state'))))
+            ->when($request->filled('city_id'), fn ($query) => $query->where('city_id', $request->integer('city_id')))
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim((string) $request->string('search'));
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('zone_name', 'like', "%{$search}%")
+                        ->orWhere('zone_code', 'like', "%{$search}%");
+                });
+                $this->prioritizePrefixSearch($query, ['zone_name', 'zone_code'], $search);
+            })
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->latest()
+            ->paginate(\App\Support\PerPage::size(10))
+            ->withQueryString();
+
+        return view('admin.zones.index', [
+            'title' => 'Region / Zone Management',
+            'activeMenu' => 'zones',
+            'zones' => $zones,
+            'countries' => Country::orderBy('country_name')->get(),
+            'cities' => City::orderBy('city_name')->get(),
+            'stateOptions' => $this->stateOptions(),
+            'cityOptions' => $this->cityOptions(City::orderBy('city_name')->get()),
+        ]);
+    }
+
+    public function create()
+    {
+        $cities = City::orderBy('city_name')->get();
+
+        return view('admin.zones.form', [
+            'title' => 'Add Region / Zone',
+            'activeMenu' => 'zones',
+            'zone' => new RegionZone(),
+            'countries' => Country::orderBy('country_name')->get(),
+            'cities' => $cities,
+            'stateOptions' => $this->stateOptions(),
+            'cityOptions' => $this->cityOptions($cities),
+            'mode' => 'create',
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validateZone($request);
+
+        $duplicate = RegionZone::where('city_id', $data['city_id'])
+            ->whereRaw('LOWER(zone_name) = ?', [strtolower($data['zone_name'])])
+            ->exists();
+
+        if ($duplicate) {
+            return back()->withErrors(['zone_name' => 'Duplicate region under the same city is not allowed.'])->withInput();
+        }
+
+        $data['created_by'] = $request->user()?->id;
+        $data['updated_by'] = $request->user()?->id;
+
+        RegionZone::create($data);
+
+        return $this->redirectToIndex($request, 'admin.zones.index', 'Region / zone created successfully.');
+    }
+
+    public function edit(RegionZone $zone)
+    {
+        $cities = City::orderBy('city_name')->get();
+
+        return view('admin.zones.form', [
+            'title' => 'Edit Region / Zone',
+            'activeMenu' => 'zones',
+            'zone' => $zone,
+            'countries' => Country::orderBy('country_name')->get(),
+            'cities' => $cities,
+            'stateOptions' => $this->stateOptions(),
+            'cityOptions' => $this->cityOptions($cities),
+            'mode' => 'edit',
+        ]);
+    }
+
+    public function update(Request $request, RegionZone $zone)
+    {
+        $data = $this->validateZone($request);
+
+        $duplicate = RegionZone::where('city_id', $data['city_id'])
+            ->whereRaw('LOWER(zone_name) = ?', [strtolower($data['zone_name'])])
+            ->where('id', '!=', $zone->id)
+            ->exists();
+
+        if ($duplicate) {
+            return back()->withErrors(['zone_name' => 'Duplicate region under the same city is not allowed.'])->withInput();
+        }
+
+        $data['updated_by'] = $request->user()?->id;
+
+        $zone->update($data);
+
+        return $this->redirectToIndex($request, 'admin.zones.index', 'Region / zone updated successfully.');
+    }
+
+    public function destroy(Request $request, RegionZone $zone)
+    {
+        if (Vendor::withTrashed()->where('region_zone_id', $zone->id)->exists() || DeliveryConfig::where('zone_id', $zone->id)->exists()) {
+            return back()->withErrors(['delete' => 'Region / zone is mapped with vendors/delivery settings and cannot be deleted.']);
+        }
+
+        $this->deleteFromDatabase($zone);
+
+        return $this->redirectToIndex($request, 'admin.zones.index', 'Region / zone deleted successfully.');
+    }
+
+    private function validateZone(Request $request): array
+    {
+        $request->merge([
+            'zone_name' => trim((string) $request->input('zone_name')),
+            'zone_code' => strtoupper(trim((string) $request->input('zone_code'))),
+        ]);
+
+        $data = $request->validate([
+            'country_id' => ['required', 'exists:countries,id'],
+            'city_id' => ['required', 'exists:cities,id'],
+            'zone_name' => ['required', 'string', 'max:255', 'regex:/^(?=.*[A-Za-z0-9])[A-Za-z0-9 .\'()\/-]+$/'],
+            'zone_code' => ['nullable', 'string', 'max:20', 'regex:/^[A-Z0-9-]+$/'],
+            'delivery_available' => ['required', 'boolean'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ], [
+            'zone_name.regex' => 'Zone name must include letters or numbers and cannot contain unsupported special characters.',
+            'zone_code.regex' => 'Zone code may contain only letters, numbers, and hyphens.',
+        ]);
+
+        $cityMatchesCountry = City::query()
+            ->whereKey($data['city_id'])
+            ->where('country_id', $data['country_id'])
+            ->exists();
+
+        if (! $cityMatchesCountry) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'city_id' => 'Selected city must belong to the selected country.',
+            ]);
+        }
+
+        return $data;
+    }
+
+    private function cityOptions($cities): array
+    {
+        return $cities->map(fn (City $city) => [
+            'id' => (string) $city->id,
+            'country_id' => (string) $city->country_id,
+            'state' => (string) $city->state,
+            'city_name' => $city->city_name,
+        ])->values()->all();
+    }
+
+    private function stateOptions(): array
+    {
+        return City::query()
+            ->whereNotNull('state')
+            ->where('state', '!=', '')
+            ->orderBy('state')
+            ->get(['country_id', 'state'])
+            ->map(fn (City $city) => [
+                'country_id' => (string) $city->country_id,
+                'state' => $city->state,
+            ])
+            ->unique(fn (array $state) => $state['country_id'].'|'.mb_strtolower($state['state']))
+            ->values()
+            ->all();
+    }
+}

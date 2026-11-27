@@ -1,0 +1,132 @@
+@extends('layouts.storefront')
+
+@section('content')
+    <main class="sf-page">
+        <section class="container-fluid px-3 px-lg-4 py-4">
+            <nav class="sf-breadcrumbs"><a href="{{ route('user.home') }}">Home</a> <span>&rsaquo;</span> My Orders</nav>
+
+            <div class="sf-info-card mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <span class="badge rounded-pill text-bg-light mb-2">Order History</span>
+                        <h1 class="h3 fw-bold mb-1">My Orders</h1>
+                        <div class="text-secondary">View and manage your recent orders.</div>
+                    </div>
+                    <a href="{{ route('user.home') }}" class="btn btn-outline-dark rounded-pill">Continue Shopping</a>
+                </div>
+            </div>
+
+            <div class="d-grid gap-3">
+                @forelse ($orders as $order)
+                    @php($latestPayment = $order->payments->last())
+                    @php($orderStatus = mb_strtolower((string) $order->order_status))
+                    @php($displayPaymentStatus = $orderStatus === 'cancelled' ? 'cancelled' : ($latestPayment?->status ?? $order->payment_status))
+                    <div class="sf-info-card">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <div class="text-secondary small">Order ID</div>
+                                <div class="fw-semibold">{{ $order->order_number }}</div>
+                                <div class="text-secondary small mt-1">{{ $order->vendor?->vendor_name ?? 'Store order' }}</div>
+                                <div class="text-secondary small">Placed on {{ \App\Support\StoreDate::dateTime($order->placed_at) }}</div>
+                            </div>
+                            <div class="sf-order-history-meta">
+                                <div class="fw-semibold fs-4">{{ \App\Support\StoreCurrency::format($order->total_amount, 0) }}</div>
+                                <span class="badge rounded-pill text-bg-{{ $displayPaymentStatus === 'paid' ? 'success' : ($displayPaymentStatus === 'cancelled' ? 'secondary' : 'warning') }}">
+                                    {{ ucfirst($displayPaymentStatus) }}
+                                </span>
+                                <div class="small text-secondary mt-1">Order status: {{ \App\Support\OrderStatus::label($order->order_status) }}</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            @forelse ($order->items as $item)
+                                @php($product = $item->product)
+                                @php($productUrl = $product ? route('storefront.product', $product) : null)
+                                @php($baseUnit = \App\Support\StoreOfferPricing::orderItemBaseUnit($item))
+                                @php($offerUnit = \App\Support\StoreOfferPricing::orderItemOfferUnit($item))
+                                @php($itemSavings = \App\Support\StoreOfferPricing::orderItemSavings($item))
+                                @php($discountLabel = \App\Support\StoreOfferPricing::discountLabel($product, $baseUnit, $offerUnit))
+                                <div class="sf-order-history-card border-top pt-3">
+                                    <div class="sf-order-history-main">
+                                        @if ($productUrl)
+                                            <a href="{{ $productUrl }}" class="sf-order-history-image" aria-label="View {{ $item->item_name }}">
+                                                <img src="{{ \App\Support\StoreImage::product($product) }}" alt="{{ $item->item_name }}" onerror="{{ \App\Support\StoreImage::onError('product') }}">
+                                            </a>
+                                        @else
+                                            <div class="sf-order-history-image" aria-hidden="true">
+                                                <img src="{{ \App\Support\StoreImage::product(null) }}" alt="" onerror="{{ \App\Support\StoreImage::onError('product') }}">
+                                            </div>
+                                        @endif
+
+                                        <div class="sf-order-history-copy">
+                                            <div class="sf-order-history-eyebrow">Order ID {{ $order->order_number }}</div>
+                                            @if ($productUrl)
+                                                <a href="{{ $productUrl }}" class="sf-order-history-title text-decoration-none">
+                                                    {{ $item->item_name }}
+                                                </a>
+                                            @else
+                                                <div class="sf-order-history-title">{{ $item->item_name ?: 'Product unavailable' }}</div>
+                                                <div class="small text-secondary">Product unavailable</div>
+                                            @endif
+                                            <div class="text-secondary small mt-2">
+                                                Qty: {{ $item->quantity }} &bull;
+                                                Offer price: <span class="fw-semibold text-success">{{ \App\Support\StoreCurrency::format($offerUnit, 0) }}</span>
+                                                @if ($baseUnit > $offerUnit)
+                                                    <span class="text-decoration-line-through ms-1">{{ \App\Support\StoreCurrency::format($baseUnit, 0) }}</span>
+                                                @endif
+                                            </div>
+                                            @if ($itemSavings > 0)
+                                                <div class="small text-success">{{ $discountLabel ?? 'Offer applied' }}. You saved {{ \App\Support\StoreCurrency::format($itemSavings, 0) }}.</div>
+                                            @endif
+                                            <div class="text-secondary small">
+                                                Item total: {{ \App\Support\StoreCurrency::format($item->subtotal, 0) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-order-history-meta">
+                                        <span class="badge rounded-pill text-bg-light">
+                                            {{ \App\Support\OrderStatus::label($order->order_status) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="border-top pt-3 fw-semibold">Order items unavailable</div>
+                            @endforelse
+                        </div>
+
+                        <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div class="text-secondary small">
+                                {{ $order->items->count() }} item(s) &bull; Delivery {{ \App\Support\StoreCurrency::format($order->delivery_charge, 0) }}
+                            </div>
+                            <div class="d-flex flex-wrap justify-content-end gap-2">
+                                <a href="{{ route('storefront.orders.show', $order) }}" class="btn btn-outline-dark btn-sm rounded-pill">View Details</a>
+                                @if (\App\Support\OrderStatus::customerCanCancel($orderStatus))
+                                    <form method="POST" action="{{ route('storefront.orders.cancel-order', $order) }}" class="js-order-cancel-form">
+                                        @csrf
+                                        <button class="btn btn-outline-dark btn-sm rounded-pill">Cancel Order</button>
+                                    </form>
+                                @endif
+                                <form method="POST" action="{{ route('storefront.orders.reorder', $order) }}">
+                                    @csrf
+                                    <button class="btn btn-outline-dark btn-sm rounded-pill">Reorder</button>
+                                </form>
+                                @if ($orderStatus !== 'cancelled' && ($latestPayment?->payment_method ?? null) === 'online' && in_array($latestPayment?->status, ['pending', 'failed'], true))
+                                    <form method="POST" action="{{ route('storefront.orders.retry-payment', $order) }}">
+                                        @csrf
+                                        <button class="btn btn-danger btn-sm rounded-pill">Pay with Stripe</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <x-empty-state>{{ config('ui_messages.no_orders') }}</x-empty-state>
+                @endforelse
+            </div>
+
+            <div class="mt-4">
+                @include('partials.pagination', ['paginator' => $orders])
+            </div>
+        </section>
+    </main>
+@endsection

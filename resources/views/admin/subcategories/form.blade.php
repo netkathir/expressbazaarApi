@@ -1,0 +1,55 @@
+@extends('layouts.admin')
+
+@section('content')
+    <div class="card shell-card">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="h3 mb-1">{{ $mode === 'create' ? 'Add Subcategory' : 'Edit Subcategory' }}</h1>
+                </div>
+                <a href="{{ route('admin.subcategories.index') }}" class="btn btn-outline-secondary" data-dirty-back>Back</a>
+            </div>
+
+            <form method="POST" action="{{ $mode === 'create' ? route('admin.subcategories.store') : route('admin.subcategories.update', $subcategory) }}" class="row g-3" enctype="multipart/form-data" data-dirty-check>
+                @csrf
+                @if ($mode === 'edit')
+                    @method('PUT')
+                @endif
+
+                <div class="col-md-6">
+                    <label class="form-label">Category</label>
+                    <select name="category_id" class="form-select" required>
+                        <option value="">Select category</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected((string) old('category_id', $subcategory->category_id) === (string) $category->id)>{{ $category->category_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Subcategory Name</label>
+                    <input type="text" name="subcategory_name" value="{{ old('subcategory_name', $subcategory->subcategory_name) }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="active" @selected(old('status', $subcategory->status ?: 'active') === 'active')>Active</option>
+                        <option value="inactive" @selected(old('status', $subcategory->status) === 'inactive')>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Image</label>
+                    <input type="file" name="image" class="form-control">
+                </div>
+                @if ($mode === 'edit' && $subcategory->image_path)
+                    <div class="col-12">
+                        <div class="small text-secondary mb-2">Current image</div>
+                        <img src="{{ \App\Support\StoreImage::subcategory($subcategory) }}" alt="{{ $subcategory->subcategory_name }}" style="width: 96px; height: 96px; object-fit: cover; border-radius: 16px;" onerror="{{ \App\Support\StoreImage::onError('category') }}">
+                    </div>
+                @endif
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit">{{ $mode === 'create' ? 'Save Subcategory' : 'Update Subcategory' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection

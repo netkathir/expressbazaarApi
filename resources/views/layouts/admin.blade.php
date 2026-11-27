@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ ($title ?? null) ? $title.' | ' : '' }}{{ config('admin_panel.brand.name') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35.0/dist/tabler-icons.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="stylesheet" href="{{ asset('admin-theme/css/admin.css').'?v='.@filemtime(public_path('admin-theme/css/admin.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/custom-overrides.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
+    @stack('head')
+</head>
+<body class="admin-shell">
+    <div class="admin-page-loader" role="status" aria-live="polite" aria-label="Loading admin page">
+        <div class="admin-page-loader-card">
+            <img src="{{ asset('branding/expressbazaar-logo.png') }}" alt="Express Bazaar" class="admin-page-loader-logo">
+            <span class="admin-page-loader-spinner"></span>
+        </div>
+    </div>
+
+    @php
+        $vendorUser = auth('vendor')->user();
+        $adminUser = auth()->user();
+        $panelUser = $vendorUser ?: $adminUser;
+        $isVendorPanel = $vendorUser !== null;
+        $panelBrandName = $isVendorPanel ? 'Express Bazar Vendor' : config('admin_panel.brand.name');
+        $panelNavigation = $isVendorPanel ? config('vendor_panel.navigation') : config('admin_panel.navigation');
+        $notificationTypes = $isVendorPanel
+            ? [\App\Notifications\VendorOrderNotification::class, \App\Notifications\LowStockNotification::class]
+            : [\App\Notifications\LowStockNotification::class];
+        $notificationAlertsUrl = $isVendorPanel ? route('vendor.notification-alerts') : route('admin.notification-alerts');
+        $notificationReadAllUrl = $isVendorPanel ? route('vendor.notifications.read-all') : route('admin.notifications.read-all');
+    @endphp
+    <div id="overlay" class="overlay"></div>
+
+    <nav id="topbar" class="navbar bg-white border-bottom fixed-top topbar px-3">
+        <div class="d-flex align-items-center gap-2">
+            <button id="toggleBtn" class="btn btn-light btn-icon btn-sm d-none d-lg-inline-flex" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+                <i class="ti ti-layout-sidebar-left-expand"></i>
+            </button>
+            <button id="mobileBtn" class="btn btn-light btn-icon btn-sm d-lg-none" type="button" aria-label="Open sidebar" aria-expanded="false">
+                <i class="ti ti-layout-sidebar-left-expand"></i>
+            </button>
+            <div>
+                <div class="fw-semibold">{{ $panelBrandName }}</div>
+            </div>
+        </div>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <span class="badge rounded-pill badge-soft">
+                <i class="ti ti-bolt me-1"></i>{{ $isVendorPanel ? 'Vendor panel' : 'Admin panel' }}
+            </span>
+            @unless ($isVendorPanel)
+                <a href="{{ route('user.home') }}" class="btn btn-outline-secondary btn-sm">User panel</a>
+            @endunless
+            @if ($panelUser)
+                @php
+                    $panelUnreadNotifications = \Illuminate\Support\Facades\Schema::hasTable('notifications')
+                        ? $panelUser->unreadNotifications()->whereIn('type', $notificationTypes)->latest()->limit(5)->get()
+                        : collect();
+                    $panelUnreadCount = \Illuminate\Support\Facades\Schema::hasTable('notifications')
+                        ? $panelUser->unreadNotifications()->whereIn('type', $notificationTypes)->count()
+                        : 0;
+                @endphp
+                <div class="dropdown admin-notification-dropdown">
+                    <button class="btn btn-light btn-icon btn-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                        <i class="ti ti-bell"></i>
+                        <span id="notification-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ $panelUnreadCount ? '' : 'd-none' }}">{{ $panelUnreadCount }}</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end admin-notification-menu shadow p-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2 px-2 pb-2 mb-1 border-bottom">
+                            <div class="small fw-semibold">Notifications</div>
+                            @canRoute($isVendorPanel ? 'vendor.notifications.read-all' : 'admin.notifications.read-all', 'POST')
+                                <button
+                                    id="notification-clear-all"
+                                    type="button"
+                                    class="btn btn-sm btn-link p-0 text-decoration-none {{ $panelUnreadCount ? '' : 'd-none' }}"
+                                    data-url="{{ $notificationReadAllUrl }}"
+                                >Clear all</button>
+                            @endcanRoute
+                        </div>
+                        <div id="notification-list" class="admin-notification-list">
+                            @forelse ($panelUnreadNotifications as $note)
+                                @if ($isVendorPanel)
+                                    <a href="{{ route('vendor.notifications.read', $note->id) }}" class="dropdown-item small rounded-2 py-2">{{ $note->data['message'] ?? 'Order received' }}</a>
+                                @else
+                                    <a href="{{ route('admin.notifications.read', $note->id) }}" class="dropdown-item small rounded-2 py-2">{{ $note->data['message'] ?? 'Notification' }}</a>
+                                @endif
+                            @empty
+                                <div class="dropdown-item-text small text-secondary px-2 py-2">No new notifications</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown admin-profile-dropdown">
+                    <button class="btn admin-profile-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open admin account menu">
+                        <span class="sf-avatar sf-avatar-sm">
+                            @if (! $isVendorPanel && $panelUser->avatar_path)
+                                <img src="{{ \App\Support\StoreImage::avatar($panelUser->avatar_path) }}" alt="{{ $panelUser->name }}" onerror="this.onerror=null;this.src='{{ \App\Support\StoreImage::avatar(null) }}';">
+                            @else
+                                {{ strtoupper(substr($isVendorPanel ? $panelUser->vendor_name : $panelUser->name, 0, 1)) }}
+                            @endif
+                        </span>
+                        <span class="admin-profile-copy">
+                            <span class="admin-profile-name">{{ $isVendorPanel ? $panelUser->vendor_name : $panelUser->name }}</span>
+                            <span class="admin-profile-role">{{ \Illuminate\Support\Str::headline($panelUser->role ?: ($isVendorPanel ? 'Vendor' : 'Administrator')) }}</span>
+                        </span>
+                        <i class="ti ti-chevron-down admin-profile-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2 admin-profile-menu">
+                        <a href="{{ $isVendorPanel ? route('vendor.dashboard') : route('admin.dashboard') }}" class="dropdown-item rounded-2">
+                            <i class="ti ti-layout-dashboard me-2"></i>Dashboard
+                        </a>
+                        <form method="POST" action="{{ $isVendorPanel ? route('vendor.logout') : route('admin.logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item rounded-2 text-danger">
+                                <i class="ti ti-logout me-2"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </nav>
+
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-area">
+            <a href="{{ $isVendorPanel ? route('vendor.dashboard') : route('admin.dashboard') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                <img src="{{ asset('branding/expressbazaar-logo.png') }}" alt="Express Bazar" class="admin-brand-logo">
+            </a>
+        </div>
+
+        <div class="nav flex-column py-3">
+            @foreach ($panelNavigation as $group)
+                @continue(strcasecmp($group['group'] ?? '', 'Location') === 0)
+
+                @php
+                    $visibleItems = collect($group['items'])->filter(function ($item) use ($panelUser, $isVendorPanel) {
+                        if (! $panelUser) {
+                            return true;
+                        }
+
+                        if ($isVendorPanel && method_exists($panelUser, 'canAccessVendorRoute')) {
+                            return $panelUser->canAccessVendorRoute($item['route'], 'GET');
+                        }
+
+                        return ! $isVendorPanel && method_exists($panelUser, 'canAccessAdminRoute') && $panelUser->canAccessAdminRoute($item['route'], 'GET');
+                    });
+                @endphp
+
+                @continue($visibleItems->isEmpty())
+
+                <div class="px-4 pt-2 pb-1">
+                    <small class="nav-text text-uppercase text-secondary fw-semibold">{{ $group['group'] }}</small>
+                </div>
+
+                @foreach ($visibleItems as $item)
+                    @php
+                        $isActiveItem = ($activeMenu ?? '') === ($item['active'] ?? '');
+                        $itemHref = route($item['route'], $item['params'] ?? []);
+                        if (! empty($item['fragment'])) {
+                            $itemHref .= '#'.$item['fragment'];
+                        }
+                    @endphp
+                    @php
+                        $hasChildren = ! empty($item['children']);
+                    @endphp
+                    @if ($hasChildren)
+                        <div class="nav-parent {{ $isActiveItem ? 'is-open' : '' }}" data-nav-parent="{{ $item['active'] ?? \Illuminate\Support\Str::slug($item['label']) }}">
+                        <div class="nav-parent-row">
+                    @endif
+                    <a
+                        class="nav-link {{ $isActiveItem ? 'active' : '' }}"
+                        href="{{ $itemHref }}"
+                        title="{{ $item['label'] }}"
+                    >
+                        <i class="ti ti-{{ $item['icon'] }}"></i>
+                        <span class="nav-text">{{ $item['label'] }}</span>
+                    </a>
+                    @if ($hasChildren)
+                            <button type="button" class="nav-toggle" aria-label="Show or hide {{ $item['label'] }} pages" aria-expanded="{{ $isActiveItem ? 'true' : 'false' }}">
+                                <i class="ti ti-chevron-down"></i>
+                            </button>
+                        </div>
+                    @endif
+                    @if ($hasChildren)
+                        @php
+                            $visibleChildren = collect($item['children'])->filter(function ($child) use ($panelUser, $isVendorPanel) {
+                                if (! $panelUser) {
+                                    return true;
+                                }
+
+                                if ($isVendorPanel && method_exists($panelUser, 'canAccessVendorRoute')) {
+                                    return $panelUser->canAccessVendorRoute($child['route'], 'GET');
+                                }
+
+                                return ! $isVendorPanel && method_exists($panelUser, 'canAccessAdminRoute') && $panelUser->canAccessAdminRoute($child['route'], 'GET');
+                            });
+                        @endphp
+                        <div class="nav-children">
+                        @foreach ($visibleChildren as $child)
+                            @php
+                                $childHref = route($child['route'], $child['params'] ?? []);
+                                if (! empty($child['fragment'])) {
+                                    $childHref .= '#'.$child['fragment'];
+                                }
+                                $isActiveChild = request()->routeIs($child['route']);
+                                foreach (($child['params'] ?? []) as $paramKey => $paramValue) {
+                                    $isActiveChild = $isActiveChild && (string) request()->route($paramKey) === (string) $paramValue;
+                                }
+                            @endphp
+                            <a
+                                class="nav-link nav-sub-link {{ $isActiveChild ? 'active' : '' }}"
+                                href="{{ $childHref }}"
+                                title="{{ $child['label'] }}"
+                            >
+                                <i class="ti ti-point-filled"></i>
+                                <span class="nav-text">{{ $child['label'] }}</span>
+                            </a>
+                        @endforeach
+                        </div>
+                        </div>
+                    @endif
+                @endforeach
+            @endforeach
+        </div>
+    </aside>
+    <script>
+        // Sidebar: open/close sub menus, and keep the scroll position when moving between pages.
+        (function () {
+            var sidebar = document.getElementById('sidebar');
+            if (!sidebar) { return; }
+            var read = function (key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } };
+            var write = function (key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} };
+
+            sidebar.querySelectorAll('[data-nav-parent]').forEach(function (parent) {
+                var key = 'adminNav:' + parent.getAttribute('data-nav-parent');
+                var toggle = parent.querySelector('.nav-toggle');
+                var saved = read(key);
+                if (saved === '1') { parent.classList.add('is-open'); }
+                if (saved === '0') { parent.classList.remove('is-open'); }
+                if (toggle) {
+                    toggle.setAttribute('aria-expanded', parent.classList.contains('is-open') ? 'true' : 'false');
+                    toggle.addEventListener('click', function () {
+                        var open = parent.classList.toggle('is-open');
+                        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                        write(key, open ? '1' : '0');
+                    });
+                }
+            });
+
+            var savedScroll = read('adminSidebarScroll');
+            if (savedScroll !== null) {
+                sidebar.scrollTop = parseInt(savedScroll, 10) || 0;
+            } else {
+                var active = sidebar.querySelector('.nav-link.active');
+                if (active) { sidebar.scrollTop = Math.max(0, active.offsetTop - sidebar.clientHeight / 2); }
+            }
+
+            var remember = function () { write('adminSidebarScroll', String(sidebar.scrollTop)); };
+            sidebar.addEventListener('scroll', remember, { passive: true });
+            sidebar.addEventListener('click', remember);
+            window.addEventListener('pagehide', remember);
+        })();
+    </script>
+
+    <main id="content" class="content py-4">
+        <div class="container-fluid">
+            @if (session('success'))
+                <div class="admin-flash-backdrop" data-admin-flash>
+                    <div class="alert alert-success admin-flash-message shadow-lg" role="alertdialog" aria-modal="true" aria-live="assertive">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="ti ti-circle-check fs-4" aria-hidden="true"></i>
+                            <div class="flex-grow-1">{{ session('success') }}</div>
+                            <button type="button" class="btn-close" data-admin-flash-close aria-label="Close notification"></button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @yield('content')
+        </div>
+    </main>
+
+    <div class="modal fade" id="adminDeleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-delete-confirm">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="mb-0 text-secondary" id="adminDeleteConfirmMessage">Are you sure you want to delete this item?</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="adminDeleteConfirmButton">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="adminBackConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-delete-confirm">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Leave without Saving?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="mb-0 text-secondary" id="adminBackConfirmMessage">Are you sure you want to go back without editing?</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="adminBackConfirmButton">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('admin-theme/js/admin.js') }}"></script>
+    <script src="{{ asset('js/inline-validation.js') }}"></script>
+    <script>
+        (function () {
+            const sameOriginUrl = function (value) {
+                if (!value) {
+                    return '';
+                }
+
+                try {
+                    const url = new URL(value, window.location.origin);
+
+                    return url.origin === window.location.origin ? url.href : '';
+                } catch (error) {
+                    return '';
+                }
+            };
+
+            // A create/edit form is never a place to return to after saving or going back.
+            const notFormUrl = function (value) {
+                if (!value) {
+                    return '';
+                }
+
+                try {
+                    const path = new URL(value).pathname;
+
+                    return /\/create\/?$/.test(path) || /\/[^/]+\/edit\/?$/.test(path) ? '' : value;
+                } catch (error) {
+                    return '';
+                }
+            };
+            const returnUrlFromQuery = notFormUrl(sameOriginUrl(new URLSearchParams(window.location.search).get('return_url')));
+            const referrerUrl = notFormUrl(sameOriginUrl(document.referrer));
+            const currentUrl = sameOriginUrl(window.location.href);
+            const isFormPage = /\/create\/?$/.test(window.location.pathname) || /\/[^/]+\/edit\/?$/.test(window.location.pathname);
+            const formReturnUrl = isFormPage ? (returnUrlFromQuery || referrerUrl) : currentUrl;
+            const backReturnUrl = returnUrlFromQuery || referrerUrl;
+
+            document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function (form) {
+                if (!formReturnUrl || form.querySelector('input[name="return_url"]')) {
+                    return;
+                }
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'return_url';
+                input.value = formReturnUrl;
+                form.appendChild(input);
+            });
+
+            document.querySelectorAll('a[data-dirty-back]').forEach(function (link) {
+                if (backReturnUrl) {
+                    link.href = backReturnUrl;
+                }
+            });
+
+            const flash = document.querySelector('[data-admin-flash]');
+            if (!flash) {
+                return;
+            }
+
+            const close = () => {
+                flash.classList.add('is-closing');
+                setTimeout(() => flash.remove(), 180);
+            };
+
+            flash.querySelector('[data-admin-flash-close]')?.addEventListener('click', close);
+            flash.addEventListener('click', (event) => {
+                if (event.target === flash) {
+                    close();
+                }
+            });
+
+            // Count the 3 seconds from when the page has finished loading, so the message is always seen.
+            const autoClose = function () { setTimeout(close, 3000); };
+            if (document.readyState === 'complete') {
+                autoClose();
+            } else {
+                window.addEventListener('load', autoClose, { once: true });
+            }
+        })();
+    </script>
+    @if ($panelUser)
+        <script>
+            (function () {
+                const countEl = document.getElementById('notification-count');
+                const listEl = document.getElementById('notification-list');
+                const clearAllEl = document.getElementById('notification-clear-all');
+
+                if (!countEl || !listEl) {
+                    return;
+                }
+
+                const renderNotifications = function (data) {
+                    countEl.textContent = data.count;
+                    countEl.classList.toggle('d-none', data.count < 1);
+                    clearAllEl?.classList.toggle('d-none', data.count < 1);
+                    listEl.innerHTML = data.items.length
+                        ? data.items.map(function (item) {
+                            if (item.url) {
+                                const link = document.createElement('a');
+                                link.className = 'dropdown-item small rounded-2 py-2';
+                                link.href = item.url;
+                                link.textContent = item.message;
+                                return link.outerHTML;
+                            }
+
+                            const div = document.createElement('div');
+                            div.className = 'dropdown-item-text small text-secondary px-2 py-2';
+                            div.textContent = item.message;
+                            return div.outerHTML;
+                        }).join('')
+                        : '<div class="dropdown-item-text small text-secondary px-2 py-2">No new notifications</div>';
+                };
+
+                const refreshNotifications = function () {
+                    fetch(@json($notificationAlertsUrl), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                        .then(function (response) {
+                            return response.ok ? response.json() : null;
+                        })
+                        .then(function (data) {
+                            if (data) {
+                                renderNotifications(data);
+                            }
+                        })
+                        .catch(function () {});
+                };
+
+                clearAllEl?.addEventListener('click', function (event) {
+                    event.preventDefault();
+
+                    fetch(clearAllEl.dataset.url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': @json(csrf_token())
+                        }
+                    })
+                        .then(function (response) {
+                            return response.ok ? response.json() : null;
+                        })
+                        .then(function (data) {
+                            if (data) {
+                                refreshNotifications();
+                            }
+                        })
+                        .catch(function () {});
+                });
+
+                setInterval(function () {
+                    refreshNotifications();
+                }, 10000);
+            })();
+        </script>
+    @endif
+    @stack('scripts')
+</body>
+</html>

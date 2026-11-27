@@ -1,0 +1,84 @@
+@extends('layouts.admin')
+
+@section('content')
+    <div class="card shell-card">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="h3 mb-1">System Configuration</h1>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('admin.system-config.update') }}" class="row g-3" data-dirty-check>
+                @csrf
+                @method('PUT')
+
+                <div class="col-md-6">
+                    <label class="form-label">Application Name</label>
+                    <input type="text" name="application_name" value="{{ old('application_name', $settings['application_name'] ?? 'EXPRESS BAZAAR') }}" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Company Name</label>
+                    <input type="text" name="company_name" value="{{ old('company_name', $settings['company_name'] ?? 'AMAZE FARMS LIMITED') }}" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Support Email</label>
+                    <input type="email" name="support_email" value="{{ old('support_email', $settings['support_email'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Support Phone</label>
+                    <input type="text" name="support_phone" value="{{ old('support_phone', $settings['support_phone'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Address Line 1</label>
+                    <input type="text" name="address_line_1" value="{{ old('address_line_1', $settings['address_line_1'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Address Line 2</label>
+                    <input type="text" name="address_line_2" value="{{ old('address_line_2', $settings['address_line_2'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Default Country</label>
+                    <input type="text" name="default_country" value="{{ old('default_country', $settings['default_country'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Default City</label>
+                    <input type="text" name="default_city" value="{{ old('default_city', $settings['default_city'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Default Zone</label>
+                    <input type="text" name="default_zone" value="{{ old('default_zone', $settings['default_zone'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Store Currency</label>
+                    @php($selectedCurrency = old('store_currency', $settings['store_currency'] ?? 'INR'))
+                    <select name="store_currency" class="form-select text-uppercase">
+                        @foreach ($currencies as $code => $currency)
+                            <option value="{{ $code }}" @selected($selectedCurrency === $code)>
+                                {{ $code }} - {{ $currency['symbol'] }} - {{ $currency['name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Minimum Order Value</label>
+                    <input type="number" step="0.01" min="0" name="minimum_order_value" value="{{ old('minimum_order_value', $settings['minimum_order_value'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Free Delivery Threshold</label>
+                    <input type="number" step="0.01" min="0" name="free_delivery_threshold" value="{{ old('free_delivery_threshold', $settings['free_delivery_threshold'] ?? '') }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Delivery Time Estimate</label>
+                    <input type="text" name="delivery_time_estimate" value="{{ old('delivery_time_estimate', $settings['delivery_time_estimate'] ?? '') }}" class="form-control">
+                </div>
+
+                <div class="col-12">
+                    @canRoute('admin.system-config.update', 'PUT')
+                        <button class="btn btn-primary" type="submit">Save Configuration</button>
+                    @endcanRoute
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection

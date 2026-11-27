@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\SystemConfig;
+use App\Support\StoreCurrency;
+use Illuminate\Http\Request;
+
+class SystemConfigController extends Controller
+{
+    public function edit()
+    {
+        $settings = SystemConfig::all()->pluck('config_value', 'config_key')->all();
+        $currencies = StoreCurrency::currencies();
+
+        Country::query()
+            ->whereNotNull('currency')
+            ->pluck('currency')
+            ->map(fn ($currency) => strtoupper(trim((string) $currency)))
+            ->filter(fn ($currency) => preg_match('/^[A-Z]{3}$/', $currency))
+            ->unique()
+            ->each(function (string $currency) use (&$currencies) {
+                $currencies[$currency] ??= ['symbol' => $currency, 'name' => $currency];
+            });
+        ksort($currencies);
+
+        return view('admin.system-config.edit', [
+            'title' => 'System Configuration',
+            'activeMenu' => 'config',
+            'settings' => $settings,
+            'currencies' => $currencies,
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $featureFlags = [
+            'online_payment_enabled',
+            'cod_enabled',
+            'vendor_registration_enabled',
+            'pos_enabled',
+            'email_notifications_enabled',
+            'sms_notifications_enabled',
+        ];
+
+        $data = $request->validate([
+            'application_name' => ['required', 'string', 'max:255'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'support_email' => ['nullable', 'email', 'max:255'],
+            'support_phone' => ['nullable', 'string', 'max:50'],
+            'address_line_1' => ['nullable', 'string', 'max:255'],
+            'address_line_2' => ['nullable', 'string', 'max:255'],
+            'default_country' => ['nullable', 'string', 'max:255'],
+            'default_city' => ['nullable', 'string', 'max:255'],
+            'default_zone' => ['nullable', 'string', 'max:255'],
+            'store_currency' => ['nullable', 'string', 'regex:/^[A-Za-z]{3}$/'],
+            'minimum_order_value' => ['nullable', 'numeric', 'min:0'],
+            'free_delivery_threshold' => ['nullable', 'numeric', 'min:0'],
+            'delivery_time_estimate' => ['nullable', 'string', 'max:255'],
+            'online_payment_enabled' => ['nullable'],
+            'cod_enabled' => ['nullable'],
+            'vendor_registration_enabled' => ['nullable'],
+            'pos_enabled' => ['nullable'],
+            'email_notifications_enabled' => ['nullable'],
+            'sms_notifications_enabled' => ['nullable'],
+        ]);
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $featureFlags, true)) {
+                continue;
+            }
+
+            if ($key === 'store_currency') {
+                $value = strtoupper(trim((string) $value));
+            }
+
+            SystemConfig::updateOrCreate(
+                ['config_key' => $key],
+                ['config_value' => is_bool($value) ? ($value ? '1' : '0') : (string) $value]
+            );
+        }
+
+        if ($request->hasAny($featureFlags)) {
+            foreach ($featureFlags as $flag) {
+                SystemConfig::updateOrCreate(
+                    ['config_key' => $flag],
+                    ['config_value' => $request->boolean($flag) ? '1' : '0']
+                );
+            }
+        }
+
+        return redirect()->route('admin.system-config.edit')->with('success', 'System configuration updated successfully.');
+    }
+}

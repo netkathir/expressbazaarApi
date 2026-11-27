@@ -1,0 +1,316 @@
+@extends('layouts.admin')
+
+@section('content')
+    @php
+        $routePrefix = $routePrefix ?? 'admin.products';
+        $isVendorPanel = $isVendorPanel ?? false;
+    @endphp
+    <div class="card shell-card">
+        <div class="card-body p-4 p-md-5">
+            @php($maxMoneyAmount = '99999999.99')
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="h3 mb-1">{{ $mode === 'create' ? 'Add Product' : 'Edit Product' }}</h1>
+                </div>
+                <a href="{{ route($routePrefix.'.index') }}" class="btn btn-outline-secondary" data-dirty-back>Back</a>
+            </div>
+
+            <form method="POST" action="{{ $mode === 'create' ? route($routePrefix.'.store') : route($routePrefix.'.update', $product) }}" class="row g-3" enctype="multipart/form-data" data-dirty-check>
+                @csrf
+                @if ($mode === 'edit')
+                    @method('PUT')
+                @endif
+                <input type="hidden" name="remove_image_ids" id="remove_image_ids" value="{{ old('remove_image_ids', '') }}">
+
+                <div class="col-md-6">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" name="product_name" value="{{ old('product_name', $product->product_name) }}" class="form-control" placeholder="Enter product name" required>
+                </div>
+                @if ($isVendorPanel)
+                    <input type="hidden" name="vendor_id" value="{{ auth('vendor')->id() }}">
+                @else
+                    <div class="col-md-6">
+                        <label class="form-label">Vendor</label>
+                        <select name="vendor_id" class="form-select" required>
+                            <option value="">Select vendor</option>
+                            @foreach ($vendors as $vendor)
+                                <option value="{{ $vendor->id }}" @selected((string) old('vendor_id', $product->vendor_id) === (string) $vendor->id)>{{ $vendor->vendor_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="col-md-6">
+                    <label class="form-label">Tax</label>
+                    <select name="tax_id" class="form-select">
+                        <option value="">Optional</option>
+                        @foreach ($taxes as $tax)
+                            <option value="{{ $tax->id }}" @selected((string) old('tax_id', $product->tax_id) === (string) $tax->id)>{{ $tax->tax_name }} ({{ $tax->tax_percentage }}%)</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    <select name="category_id" class="form-select" required>
+                        <option value="">Select category</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected((string) old('category_id', $product->category_id) === (string) $category->id)>{{ $category->category_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Subcategory</label>
+                    <select name="subcategory_id" class="form-select">
+                        <option value="">Optional</option>
+                        @foreach ($subcategories as $subcategory)
+                            <option value="{{ $subcategory->id }}" @selected((string) old('subcategory_id', $product->subcategory_id) === (string) $subcategory->id)>{{ $subcategory->subcategory_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="active" @selected(old('status', $product->status ?: 'active') === 'active')>Active</option>
+                        <option value="inactive" @selected(old('status', $product->status) === 'inactive')>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="4" class="form-control" placeholder="Enter product description">{{ old('description', $product->description) }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Product Images</label>
+                    <input type="file" name="images[]" class="form-control @error('images') is-invalid @enderror @error('images.*') is-invalid @enderror" multiple accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" data-max-file-size="2097152" data-max-files="5" data-allowed-types="image/jpeg,image/png,image/webp,image/gif">
+                    <div class="form-text">You can upload up to 5 images: JPG, JPEG, PNG, WEBP or GIF, maximum 2 MB each. Leave blank to keep the current images on edit.</div>
+                    @error('images')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    @error('images.*')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                @php($pendingImages = \App\Support\PendingProductImages::forForm())
+                @if ($pendingImages !== [])
+                    <div class="col-12">
+                        <div class="form-text mb-2">These images are already uploaded and will be saved with the product. Choose more files above to add to them.</div>
+                        <div class="row g-3">
+                            @foreach ($pendingImages as $pendingImage)
+                                <div class="col-6 col-md-3" data-pending-image>
+                                    <div class="border rounded-3 p-2 h-100">
+                                        <input type="hidden" name="pending_images[]" value="{{ $pendingImage['path'] }}">
+                                        <img src="{{ $pendingImage['url'] }}" alt="Uploaded product image" class="img-fluid rounded-2" style="aspect-ratio: 1 / 1; object-fit: cover;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="this.closest('[data-pending-image]').remove()">Remove</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                @if ($mode === 'edit' && $product->images->isNotEmpty())
+                    <div class="col-12">
+                        <div class="row g-3">
+                            @foreach ($product->images as $image)
+                                <div class="col-6 col-md-3">
+                                    <div class="border rounded-3 p-2 h-100" id="product-image-preview-{{ $image->id }}">
+                                        <img src="{{ asset($image->image_path) }}" alt="{{ $product->product_name }}" class="img-fluid rounded-2" style="aspect-ratio: 1 / 1; object-fit: cover;" onerror="{{ \App\Support\StoreImage::onError('product') }}">
+                                        <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="removeProductImage({{ $image->id }})">Delete Image</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                <div class="col-md-3">
+                    <label class="form-label">Price</label>
+                    <input type="number" step="0.01" min="0.01" max="{{ $maxMoneyAmount }}" name="price" value="{{ old('price', $product->price) }}" class="form-control @error('price') is-invalid @enderror" placeholder="Enter price" required>
+                    @error('price')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @else
+                        <div class="invalid-feedback">Price must be greater than zero.</div>
+                    @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Discount Type</label>
+                    <select name="discount_type" class="form-select @error('discount_type') is-invalid @enderror" id="discountType">
+                        <option value="">None</option>
+                        <option value="percentage" @selected(old('discount_type', $product->discount_type) === 'percentage')>Percentage</option>
+                        <option value="fixed" @selected(old('discount_type', $product->discount_type) === 'fixed')>Fixed Amount</option>
+                    </select>
+                    @error('discount_type')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" id="discountValueLabel">Discount Value</label>
+                    <input type="number" step="any" min="1" max="{{ $maxMoneyAmount }}" name="discount_value" value="{{ old('discount_value', $product->discount_value) }}" class="form-control" id="discountValue" data-max-money="{{ $maxMoneyAmount }}" placeholder="Enter discount value">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Inventory Mode</label>
+                    <select name="inventory_mode" class="form-select" required>
+                        <option value="internal" @selected(old('inventory_mode', $product->inventory_mode ?: 'internal') === 'internal')>Internal</option>
+                        <option value="pos" @selected(old('inventory_mode', $product->inventory_mode) === 'pos')>POS</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Discount Start</label>
+                    <input type="date" name="discount_start_date" value="{{ old('discount_start_date', optional($product->discount_start_date)->format('Y-m-d')) }}" class="form-control" id="discountStartDate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Discount End</label>
+                    <input type="date" name="discount_end_date" value="{{ old('discount_end_date', optional($product->discount_end_date)->format('Y-m-d')) }}" class="form-control" id="discountEndDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Stock Qty</label>
+                    <input type="number" min="0" name="stock_quantity" value="{{ old('stock_quantity', $product->inventory?->stock_quantity) }}" class="form-control" id="stockQuantity" placeholder="Enter stock" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Unit</label>
+                    @php($selectedUnit = old('unit', $product->unit ?: $product->inventory?->unit))
+                    <select name="unit" class="form-select" required>
+                        <option value="">Select unit</option>
+                        <option value="kg" @selected($selectedUnit === 'kg')>kg</option>
+                        <option value="pcs" @selected($selectedUnit === 'pcs')>pcs</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Low Stock</label>
+                    <input type="number" min="0" name="low_stock_threshold" value="{{ old('low_stock_threshold', $product->inventory?->low_stock_threshold) }}" class="form-control" id="lowStockThreshold" placeholder="Enter low stock">
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit">{{ $mode === 'create' ? 'Save Product' : 'Update Product' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script>
+        function removeProductImage(imageId) {
+            window.adminConfirm('Delete this image?', {
+                title: 'Delete image',
+                confirmText: 'Delete',
+                confirmClass: 'btn-danger',
+            }).then((confirmed) => {
+                if (!confirmed) {
+                    return;
+                }
+
+                const input = document.getElementById('remove_image_ids');
+                const preview = document.getElementById('product-image-preview-' + imageId);
+                const ids = input.value ? input.value.split(',').filter(Boolean) : [];
+
+                if (!ids.includes(String(imageId))) {
+                    ids.push(String(imageId));
+                }
+
+                input.value = ids.join(',');
+
+                if (preview) {
+                    preview.style.display = 'none';
+                }
+            });
+        }
+
+        (() => {
+            const discountType = document.getElementById('discountType');
+            const discountValue = document.getElementById('discountValue');
+            const discountValueLabel = document.getElementById('discountValueLabel');
+            const dateFields = [
+                document.getElementById('discountStartDate'),
+                document.getElementById('discountEndDate'),
+            ].filter(Boolean);
+
+            const syncDiscountValueLabel = () => {
+                if (!discountType || !discountValueLabel) {
+                    return;
+                }
+
+                discountValue?.toggleAttribute('required', Boolean(discountType.value));
+
+                if (discountType.value === 'percentage') {
+                    discountValueLabel.textContent = 'Discount Value (%)';
+                    discountValue?.setAttribute('max', '100');
+                } else if (discountType.value === 'fixed') {
+                    discountValueLabel.textContent = 'Discount Value (' + @json(\App\Support\StoreCurrency::code()) + ')';
+                    discountValue?.setAttribute('max', discountValue.dataset.maxMoney || '{{ $maxMoneyAmount }}');
+                } else {
+                    discountValueLabel.textContent = 'Discount Value';
+                    discountValue?.setAttribute('max', discountValue.dataset.maxMoney || '{{ $maxMoneyAmount }}');
+                }
+            };
+
+            const syncDiscountDates = () => {
+                const hasDiscount = Boolean(discountType?.value) && Number(discountValue?.value || 0) > 0;
+
+                dateFields.forEach((field) => {
+                    field.disabled = !hasDiscount;
+                    if (!hasDiscount) {
+                        field.value = '';
+                        field.classList.remove('is-invalid');
+                        field.removeAttribute('aria-invalid');
+                    }
+                });
+            };
+
+            discountType?.addEventListener('change', () => {
+                syncDiscountValueLabel();
+                syncDiscountDates();
+            });
+            discountValue?.addEventListener('input', syncDiscountDates);
+            syncDiscountValueLabel();
+            syncDiscountDates();
+        })();
+
+        (() => {
+            const imageInput = document.querySelector('input[name="images[]"][data-max-file-size]');
+            if (!imageInput) {
+                return;
+            }
+
+            const maxBytes = Number(imageInput.dataset.maxFileSize || 0);
+            const maxFiles = Number(imageInput.dataset.maxFiles || 0);
+            const allowedTypes = (imageInput.dataset.allowedTypes || '').split(',').filter(Boolean);
+            const maxMb = Math.round((maxBytes / 1024 / 1024) * 10) / 10;
+
+            const validateImages = () => {
+                const files = Array.from(imageInput.files || []);
+                const invalidType = files.find((file) => !allowedTypes.includes(file.type));
+                const oversized = files.find((file) => file.size > maxBytes);
+                let message = '';
+
+                if (maxFiles && files.length > maxFiles) {
+                    message = `You can upload up to ${maxFiles} product images.`;
+                } else if (invalidType) {
+                    message = `${invalidType.name} is not a valid image format. Use JPG, JPEG, PNG, WEBP or GIF.`;
+                } else if (oversized) {
+                    message = `${oversized.name} is larger than ${maxMb} MB.`;
+                }
+
+                imageInput.setCustomValidity(message);
+                imageInput.reportValidity();
+            };
+
+            imageInput.addEventListener('change', validateImages);
+        })();
+
+        (() => {
+            const stockQuantity = document.getElementById('stockQuantity');
+            const lowStockThreshold = document.getElementById('lowStockThreshold');
+            if (!stockQuantity || !lowStockThreshold) {
+                return;
+            }
+
+            const syncLowStockLimit = () => {
+                lowStockThreshold.max = stockQuantity.value || '';
+                const stock = Number(stockQuantity.value || 0);
+                const threshold = Number(lowStockThreshold.value || 0);
+                lowStockThreshold.setCustomValidity(threshold > stock ? 'Low stock cannot be greater than stock quantity.' : '');
+            };
+
+            stockQuantity.addEventListener('input', syncLowStockLimit);
+            lowStockThreshold.addEventListener('input', syncLowStockLimit);
+            syncLowStockLimit();
+        })();
+    </script>
+@endpush

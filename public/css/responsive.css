@@ -1,0 +1,289 @@
+/* =========================================================
+   Global mobile responsive layer
+   Loaded LAST in every layout so it can safely override.
+   ========================================================= */
+
+/* ---- Base safety (all screens) ---- */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+img, video, svg { max-width: 100%; }
+img { height: auto; }
+.table-responsive { -webkit-overflow-scrolling: touch; }
+.modal-dialog { max-width: min(var(--bs-modal-width, 500px), calc(100vw - 1rem)); }
+pre, code { white-space: pre-wrap; word-break: break-word; }
+.dropdown-menu { max-width: calc(100vw - 1rem); }
+
+/* Inline-styled dropdowns (min-width:280px) must not exceed the screen */
+.dropdown-menu[style*="min-width"] { min-width: 0 !important; width: 280px; max-width: calc(100vw - 1rem); }
+
+/* Password show/hide toggle: matches the input height, small gap, tidy icon */
+.input-group > .js-password-toggle {
+    flex: 0 0 auto; align-self: stretch; width: 2.6rem; min-height: 0 !important; height: auto; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: .5rem !important; border-radius: var(--bs-border-radius, .375rem) !important;
+}
+.input-group > .js-password-toggle i { font-size: 1.05rem; line-height: 1; }
+.input-group > .form-control:has(+ .js-password-toggle) { border-top-right-radius: var(--bs-border-radius, .375rem) !important; border-bottom-right-radius: var(--bs-border-radius, .375rem) !important; }
+
+/* ---- Tablet & below ---- */
+@media (max-width: 991.98px) {
+    .container, .container-fluid { padding-left: .9rem; padding-right: .9rem; }
+    h1, .h1 { font-size: clamp(1.5rem, 5vw, 2rem); }
+    h2, .h2 { font-size: clamp(1.3rem, 4.4vw, 1.7rem); }
+    .modal-dialog:not(.modal-fullscreen) { margin: .5rem auto; }
+    .modal-dialog-scrollable .modal-body { -webkit-overflow-scrolling: touch; }
+
+    /* Admin/vendor sidebar: dim the page behind it & never exceed the screen */
+    .sidebar { width: min(280px, 86vw); max-width: 86vw; box-shadow: 0 0 0 100vmax rgba(15, 23, 42, 0); transition: left .25s ease, box-shadow .25s ease; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .sidebar:not(.mobile-show) { left: calc(-1 * min(280px, 86vw) - 10px); }
+    .sidebar.mobile-show { box-shadow: 0 0 0 100vmax rgba(15, 23, 42, .45); }
+}
+
+/* ---- Phones ---- */
+@media (max-width: 767.98px) {
+    /* Forms: comfortable tap targets, no iOS zoom on focus */
+    .form-control, .form-select, .btn, input, select, textarea { font-size: 16px; }
+    .form-control, .form-select { min-height: 44px; }
+    .btn { min-height: 42px; }
+    .btn-sm { min-height: 36px; font-size: .9rem; }
+
+    /* Page header rows: title + action buttons stack */
+    .admin-shell main .d-flex.justify-content-between.align-items-center,
+    .admin-shell main .d-flex.justify-content-between.align-items-start,
+    .admin-shell main .d-flex.align-items-center.justify-content-between {
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+    .admin-shell main .d-flex.justify-content-between > .d-flex.gap-2,
+    .admin-shell main .d-flex.justify-content-between > .btn,
+    .admin-shell main .d-flex.justify-content-between > a.btn { flex-wrap: wrap; }
+
+    /* Filter / search forms: one control per row */
+    .admin-shell form.row > [class*="col-"]:not(.col-12):not(.col-6) { flex: 0 0 100%; max-width: 100%; }
+    .admin-shell form .d-flex.gap-2:has(> .form-control, > .form-select) { flex-wrap: wrap; }
+
+    /* Filter / Reset button row: two equal, same-height, full-width buttons */
+    .admin-shell form.row > .col-md-auto.ms-auto { width: 100%; margin-left: 0 !important; }
+    .admin-shell form.row > .col-md-auto.ms-auto > .btn { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; height: 44px; padding-top: 0; padding-bottom: 0; }
+
+    /* Cards & panels */
+    .card-body, .shell-card, .soft-panel, .hero-card { padding-left: 1rem; padding-right: 1rem; }
+    .hero-card { padding-top: 1rem; padding-bottom: 1rem; }
+
+    /* Tables: compact, scroll sideways inside their wrapper */
+    .table-responsive > .table { min-width: 640px; }
+    .table > :not(caption) > * > * { padding: .6rem .65rem; font-size: .88rem; }
+    .table td, .table th { white-space: nowrap; }
+    .table td .text-wrap, .table td[style*="max-width"] { white-space: normal; min-width: 180px; }
+    .table .btn-group, .table td .d-flex { flex-wrap: nowrap; }
+
+    .table-responsive > .vendor-category-table { min-width: 0; }
+    .vendor-category-table th:last-child { width: 1%; }
+    .vendor-category-table td:first-child {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* Pagination */
+    .pagination { flex-wrap: wrap; justify-content: center; }
+
+    /* Modals */
+    .modal-footer { flex-wrap: wrap; }
+    .modal-footer > .btn { flex: 1 1 auto; }
+
+    /* Toasts / alerts */
+    .toast-container, .toast { max-width: calc(100vw - 1.5rem); }
+    .alert { font-size: .92rem; }
+
+    /* Auth screens (admin / vendor / customer) */
+    .auth-panel-logo, .login-logo { max-width: 200px; height: auto; }
+    .container > .row > [class*="col-"] > .card { border-radius: 18px; }
+
+    /* Storefront */
+    .sf-brand-logo { max-height: 44px; width: auto; }
+    .sf-brand-logo-footer { max-height: 56px; }
+    .sf-footer-copyright { text-align: center; }
+    .sf-footer a { display: inline-block; padding: .2rem 0; }
+}
+
+/* ---- Small phones ---- */
+@media (max-width: 575.98px) {
+    .container, .container-fluid { padding-left: .75rem; padding-right: .75rem; }
+    .row { --bs-gutter-x: 1rem; }
+    .btn-lg { font-size: 1rem; padding: .6rem 1rem; }
+    .d-flex.gap-2 > .btn:only-child { flex: 1 1 auto; }
+    .admin-page-title { word-break: break-word; }
+    .metric-card, .admin-kpi-card, .dashboard-card { min-width: 0; }
+    .nav-tabs, .nav-pills { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar, .nav-pills::-webkit-scrollbar { display: none; }
+    .nav-tabs .nav-link, .nav-pills .nav-link { white-space: nowrap; }
+}
+
+/* ---- Very small phones ---- */
+@media (max-width: 359.98px) {
+    body { font-size: .92rem; }
+    .btn { padding-left: .75rem; padding-right: .75rem; }
+}
+
+.sf-mobile-auth { display: none; }
+
+/* =========================================================
+   Storefront mobile header (<= 767px)
+   Row 1: logo            Row 2: location | vendors
+   Row 3: search | login + cart   (this row stays pinned on scroll)
+   Pure CSS: the header is sticky with a negative top, so rows 1-2
+   scroll away naturally. No height change => no scroll jitter.
+   ========================================================= */
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-topbar { position: sticky !important; top: -100px !important; z-index: 1030; }
+    .storefront-shell .sf-topbar .sf-searchbar {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        grid-template-areas:
+            "logo   logo   logo   logo"
+            "loc    loc    vendor vendor"
+            "search search search actions" !important;
+        align-items: center;
+        gap: 8px !important;
+        padding-block: 8px !important;
+    }
+    .storefront-shell .sf-topbar .sf-header-controls { display: contents !important; }
+
+    .storefront-shell .sf-topbar .sf-logo { grid-area: logo; justify-self: center; height: 44px; display: flex; align-items: center; }
+    .storefront-shell .sf-topbar .sf-brand-logo { height: 44px !important; width: auto; max-width: 100% !important; }
+    .storefront-shell .sf-topbar .sf-location-btn { grid-area: loc; width: 100%; min-width: 0; height: 40px; }
+    .storefront-shell .sf-topbar .sf-vendor-selector { grid-area: vendor; width: 100%; max-width: none; min-width: 0; }
+    .storefront-shell .sf-topbar .sf-vendor-selector .sf-vendor-btn { width: 100%; height: 40px; min-width: 0; }
+    .storefront-shell .sf-topbar .sf-search-form { grid-area: search; width: 100%; max-width: none !important; min-width: 0; height: 40px; }
+    .storefront-shell .sf-topbar .sf-actions { grid-area: actions; display: flex; align-items: center; gap: 6px; min-width: 0; }
+
+    .storefront-shell .sf-topbar .sf-location-btn,
+    .storefront-shell .sf-topbar .sf-vendor-btn { display: flex; align-items: center; justify-content: flex-start; gap: 4px; font-size: 13px !important; padding-inline: 10px !important; }
+    .storefront-shell .sf-topbar .js-location-label,
+    .storefront-shell .sf-topbar .js-selected-vendor-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; min-width: 0; text-align: left; }
+
+    .storefront-shell .sf-topbar .sf-search-form input { font-size: 16px !important; }
+    .storefront-shell .sf-topbar .sf-search-form input::placeholder {
+        font-size: inherit !important;
+        color: #4b5563;
+        opacity: 1;
+    }
+
+    .storefront-shell .sf-topbar .sf-actions { justify-content: flex-end; }
+    .storefront-shell .sf-topbar .sf-actions .sf-login-signup-link { display: none !important; }
+    .storefront-shell .sf-topbar .sf-mobile-auth { display: block; }
+    .storefront-shell .sf-topbar .sf-mobile-auth__btn { min-width: 38px; }
+    .storefront-shell .sf-topbar .sf-mobile-auth__btn > span { font-size: 11px; }
+    .storefront-shell .sf-topbar .sf-login-signup-link { font-size: 12px; padding: 0 8px; height: 40px; white-space: nowrap; gap: 6px; }
+    .storefront-shell .sf-topbar .sf-login-signup-link__item { font-size: 12px; }
+    .storefront-shell .sf-topbar .sf-action-link { min-width: 38px; }
+    .storefront-shell .sf-topbar .sf-action-link > span:not(.sf-cart-badge) { font-size: 11px; }
+
+    /* Disable the old JS-driven "compact" collapse (it caused flicker) */
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-logo,
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-location-btn,
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-vendor-selector {
+        max-height: none !important; opacity: 1 !important; transform: none !important; pointer-events: auto !important;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .storefront-shell .sf-topbar .sf-login-signup-link > i { display: none; }
+    .storefront-shell .sf-topbar .sf-brand-logo { height: 40px !important; }
+}
+
+@media (max-width: 359.98px) {
+    .storefront-shell .sf-topbar .sf-search-form { grid-template-columns: 32px minmax(0, 1fr); }
+    .storefront-shell .sf-topbar .sf-search-form > i { width: 32px; }
+    .storefront-shell .sf-topbar .sf-search-form input { padding-inline: 6px; }
+}
+
+/* Mobile promo banner: image first, then content; compact left-aligned Shop Now */
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-promo-card-primary .sf-promo-slide { display: flex !important; flex-direction: column; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-visual { order: 1; padding: 14px 16px 0 !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-copy { order: 2; padding: 14px 16px 34px !important; text-align: left; align-items: flex-start; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-actions { justify-content: flex-start; width: 100%; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-actions .btn { width: auto !important; flex: 0 0 auto; min-height: 32px; padding: 5px 16px !important; font-size: .78rem; }
+}
+
+/* Mobile promo banner polish: full-width image, arrows centred on the image, tidy text */
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-promo-card-primary .sf-promo-visual { display: block; width: 100%; padding: 12px 12px 0 !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-offer-frame { width: 100% !important; height: 170px; aspect-ratio: auto !important; border-radius: 12px; margin: 0; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-offer-frame img { width: 100%; height: 100%; object-fit: cover; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-nav { top: 97px !important; width: 30px !important; height: 30px !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-nav-prev { left: 20px !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-nav-next { right: 20px !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-copy { padding: 12px 16px 32px !important; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-copy h1 { font-size: 1.35rem; line-height: 1.15; margin: 4px 0 0; }
+    .storefront-shell .sf-promo-card-primary .sf-promo-copy p { margin-top: 6px; font-size: .78rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
+/* Mobile: hide promo prev/next arrows (swipe + dots remain) */
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-promo-card-primary .sf-promo-nav { display: none !important; }
+}
+
+/* Storefront buttons: semi-curved (8px) instead of fully rounded pills */
+.storefront-shell .btn,
+.storefront-shell .btn.rounded-pill,
+.storefront-shell .rounded-pill.btn,
+.storefront-shell .sf-card-add .btn,
+.storefront-shell .sf-location-btn,
+.storefront-shell .sf-vendor-btn,
+.storefront-shell .sf-order-details-btn,
+.storefront-shell .sf-actions .sf-login-signup-link,
+.storefront-shell .modal .btn,
+.storefront-shell .modal .btn.rounded-pill {
+    border-radius: 8px !important;
+}
+.storefront-shell .sf-actions .sf-login-signup-link__item:focus-visible { border-radius: 6px; }
+
+/* Mobile, logged-in: give the Profile / Notifications / Cart group enough room and align them */
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-topbar .sf-searchbar:has(.sf-profile-link) {
+        grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+        grid-template-areas:
+            "logo   logo   logo   logo   logo   logo   logo   logo"
+            "loc    loc    loc    loc    vendor vendor vendor vendor"
+            "search search search search search actions actions actions" !important;
+    }
+    .storefront-shell .sf-topbar .sf-actions { gap: 2px; justify-content: space-between; }
+    .storefront-shell .sf-topbar .sf-actions > .dropdown,
+    .storefront-shell .sf-topbar .sf-actions > .js-open-cart { flex: 1 1 0; min-width: 0; display: flex; justify-content: center; }
+    .storefront-shell .sf-topbar .sf-actions .sf-action-link {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 40px; min-width: 0; padding: 0 2px; gap: 2px; line-height: 1;
+    }
+    .storefront-shell .sf-topbar .sf-actions .sf-action-link > i { font-size: 22px; line-height: 1; }
+    .storefront-shell .sf-topbar .sf-actions .sf-action-link > span:not(.sf-cart-badge) { font-size: 10px; line-height: 1; }
+}
+
+/* Cart drawer: the item list scrolls inside the drawer (header + footer stay fixed) */
+.storefront-shell .sf-cart-drawer { height: 100vh; height: 100dvh; overflow: hidden; }
+.storefront-shell .sf-cart-drawer > .js-cart-drawer { flex: 1 1 auto; min-height: 0; height: 100%; display: flex; flex-direction: column; }
+.storefront-shell .sf-cart-drawer .sf-cart-panel { flex: 1 1 auto; min-height: 0; height: 100%; }
+.storefront-shell .sf-cart-drawer .sf-cart-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.storefront-shell .sf-cart-drawer .sf-cart-header,
+.storefront-shell .sf-cart-drawer .sf-cart-footer { flex: 0 0 auto; }
+
+/* Cart drawer open: lock the page behind it and let touch drag scroll the item list */
+body:has(.sf-cart-drawer.open) { overflow: hidden; }
+.storefront-shell .sf-cart-drawer { touch-action: pan-y; }
+.storefront-shell .sf-cart-drawer .sf-cart-body { touch-action: pan-y; overflow-y: scroll; }
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-cart-drawer { width: min(100vw, 380px); max-height: 100dvh; }
+}
+
+/* Error popup stays visible wherever the page is scrolled */
+.sf-toast-error {
+    position: fixed !important;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92vw, 460px);
+    margin: 0 !important;
+    z-index: 2000;
+    text-align: center;
+}

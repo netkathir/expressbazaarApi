@@ -1,0 +1,107 @@
+@extends('layouts.admin')
+
+@section('content')
+    @php
+        $routePrefix = $routePrefix ?? 'admin.coupons';
+        $isVendorPanel = $isVendorPanel ?? false;
+    @endphp
+    <div class="card shell-card">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="h3 mb-1">{{ $mode === 'create' ? 'Create Coupon Code' : 'Edit Coupon Code' }}</h1>
+                </div>
+                <a href="{{ route($routePrefix.'.index') }}" class="btn btn-outline-secondary" data-dirty-back>Back</a>
+            </div>
+
+            <form method="POST" action="{{ $mode === 'create' ? route($routePrefix.'.store') : route($routePrefix.'.update', $coupon) }}" class="row g-3" data-dirty-check>
+                @csrf
+                @if ($mode === 'edit')
+                    @method('PUT')
+                @endif
+
+                <div class="col-md-4">
+                    <label class="form-label">Coupon Code</label>
+                    <input type="text" name="code" value="{{ old('code', $coupon->code) }}" class="form-control text-uppercase" placeholder="WELCOME10" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Discount Type</label>
+                    <select name="type" class="form-select" required>
+                        <option value="" disabled hidden>Select discount type</option>
+                        <option value="percentage" @selected(old('type', $coupon->type) === 'percentage')>Percentage</option>
+                        <option value="fixed" @selected(old('type', $coupon->type) === 'fixed')>Fixed Amount</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" id="couponValueLabel">Discount Value (%)</label>
+                    <div class="input-group">
+                        <input type="number" name="value" step="0.01" min="0.01" value="{{ old('value', $coupon->value) }}" class="form-control" required>
+                        <span class="input-group-text" id="couponValueSuffix">%</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Minimum Order</label>
+                    <div class="input-group">
+                        <span class="input-group-text">{{ \App\Support\StoreCurrency::code() }}</span>
+                        <input type="number" name="min_order" step="0.01" min="0" value="{{ old('min_order', $coupon->min_order) }}" class="form-control" placeholder="Optional">
+                    </div>
+                </div>
+                @if ($isVendorPanel)
+                    <input type="hidden" name="vendor_id" value="{{ auth('vendor')->id() }}">
+                @else
+                    <div class="col-md-4">
+                        <label class="form-label">Vendor</label>
+                        <select name="vendor_id" class="form-select">
+                            <option value="">Vendors</option>
+                            @foreach ($vendors as $vendor)
+                                <option value="{{ $vendor->id }}" @selected((string) old('vendor_id', $coupon->vendor_id) === (string) $vendor->id)>{{ $vendor->vendor_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="col-md-4">
+                    <label class="form-label">Expiry Date & Time</label>
+                    <input type="datetime-local" name="expires_at" value="{{ old('expires_at', \App\Support\StoreDate::inputValue($coupon->expires_at)) }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <div class="form-check form-switch mt-2">
+                        <input type="hidden" name="is_active" value="0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="coupon-active" name="is_active" value="1" @checked(old('is_active', $coupon->exists ? $coupon->is_active : true))>
+                        <label class="form-check-label" for="coupon-active">Active</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit">{{ $mode === 'create' ? 'Save Coupon' : 'Update Coupon' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const type = document.querySelector('[name="type"]');
+            const label = document.getElementById('couponValueLabel');
+            const suffix = document.getElementById('couponValueSuffix');
+
+            const sync = () => {
+                if (!type || !label || !suffix) {
+                    return;
+                }
+
+                if (type.value === 'fixed') {
+                    label.textContent = 'Discount Value (Amount)';
+                    suffix.textContent = @json(\App\Support\StoreCurrency::code());
+                } else {
+                    label.textContent = 'Discount Value (%)';
+                    suffix.textContent = '%';
+                }
+            };
+
+            type?.addEventListener('change', sync);
+            sync();
+        })();
+    </script>
+@endpush

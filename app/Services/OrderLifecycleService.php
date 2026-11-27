@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Services;
+
+use App\Events\TriggerNotificationEvent;
+use App\Models\Order;
+use App\Models\OrderLog;
+use App\Support\NotificationHelper;
+use App\Support\OrderStatus;
+use App\Support\StoreCurrency;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Throwable;
+
+class OrderLifecycleService
+{
+    private const TRANSITIONS = [
+        'pending' => ['accepted', 'cancelled'],
+        'accepted' => ['dispatched', 'cancelled'],
+        'dispatched' => ['out_for_delivery'],
+        'out_for_delivery' => ['delivered'],
+        'delivered' => ['completed'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
+    public function canTransition(?string $from, string $to): bool
+    {
+        $from = mb_strtolower((string) ($from ?: 'pending'));
+        $to = mb_strtolower($to);
+
+        if ($from === $to) {
+            return true;
+        }
+
+        return in_array($to, self::TRANSITIONS[$from] ?? [], true);
+    }
+
+    public function transition(Order $order, string $to, ?int $changedBy = null, ?string $note = null): void
+    {
+        $from = mb_strtolower((string) $order->order_status);
+        $to = mb_strtolower($to);
+
+        if (! $this->canTransition($from, $to)) {
+            throw ValidationException::withMessages([
+                'order_status' => 'Invalid order status transition from '.OrderStatus::label($from).' to '.OrderStatus::label($to).'.',
+            ]);
+        }
+
+        if ($from === $to) {
+            return;
+        }
+
+        $updates = [
+            'order_status' => $to,
+            'updated_by' => $changedBy,
+        ];
+
+        if (array_key_exists('status', $order->getAttributes())) {
+            $updates['status'] = $to;
+        }
+
+        $order->update($updates);
+        $this->log($order, $from, $to, $changedBy, $note);
+        $freshOrder = $order->fresh(['customer', 'vendor']);
+        $this->dispatchCustomerStatusNotification($freshOrder, $to);
+        NotificationHelper::sendOrderStatus($freshOrder, $to);
+
+        if ($to === 'cancelled') {
+            // Refund only after the surrounding transaction has committed, so a
+            // rollback can never leave a refund issued for a still-active order.
+            $orderId = (int) $order->id;
+            DB::afterCommit(function () use ($orderId) {
+                try {
+                    $refunds = app(StripeRefundService::class);
+                    $refunds->expireOpenCheckout($orderId);
+                    $refunds->refundCancelledOrder($orderId);
+                } catch (Throwable $exception) {
+                    Log::error('Cancelled order refund dispatch failed.', [
+                        'order_id' => $orderId,
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
+            });
+        }
+    }
+
+    public function log(Order $order, ?string $from, string $to, ?int $changedBy = null, ?string $note = null): void
+    {
+        OrderLog::create([
+            'order_id' => $order->id,
+            'from_status' => $from,
+            'to_status' => $to,
+            'changed_by' => $changedBy,
+            'note' => $note,
+        ]);
+    }
+
+    private function dispatchCustomerStatusNotification(Order $order, string $status): void
+    {
+        try {
+            $customer = $order->customer;
+
+            if (! $customer) {
+                return;
+            }
+
+            $trigger = $status === 'delivered' ? 'ORDER_DELIVERED' : 'ORDER_STATUS_UPDATE';
+
+            event(new TriggerNotificationEvent($trigger, [
+                'recipient_type' => 'customer',
+                'recipient_id' => $customer->id,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+                'name' => $customer->name,
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => OrderStatus::label($status),
+                'order_status' => OrderStatus::label($status),
+                'vendor_name' => $order->vendor?->vendor_name ?? 'Express Bazar',
+                'amount' => StoreCurrency::format($order->total_amount),
+                'total_amount' => StoreCurrency::format($order->total_amount),
+            ]));
+        } catch (Throwable $exception) {
+            Log::error('Order status customer notification dispatch failed.', [
+                'order_id' => $order->id,
+                'status' => $status,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+}

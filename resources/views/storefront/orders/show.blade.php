@@ -1,0 +1,167 @@
+@extends('layouts.storefront')
+
+@section('content')
+    @php($latestPayment = $order->payments->last())
+    @php($orderStatus = mb_strtolower((string) $order->order_status))
+    @php($displayPaymentStatus = $orderStatus === 'cancelled' ? 'cancelled' : ($latestPayment?->status ?? $order->payment_status))
+    @php($itemTotal = $order->items->sum(fn ($item) => ! is_null($item->subtotal) ? (float) $item->subtotal : ((float) $item->price * (int) $item->quantity)))
+    <?php
+        $couponCode = $order->coupon_code;
+        $couponDiscount = (float) $order->coupon_discount;
+        if (! $couponCode && preg_match('/Coupon applied: (.+?) \(-([\d.,]+)\)/', (string) $order->notes, $m)) {
+            $couponCode = $m[1];
+            $couponDiscount = (float) str_replace(',', '', $m[2]);
+        }
+    ?>
+    <main class="sf-page">
+        <section class="container-fluid px-3 px-lg-4 py-4">
+            <nav class="sf-breadcrumbs">
+                <a href="{{ route('user.home') }}">Home</a>
+                <span>&rsaquo;</span>
+                <a href="{{ route('storefront.orders.index') }}">My Orders</a>
+                <span>&rsaquo;</span>
+                {{ $order->order_number }}
+            </nav>
+
+            <div class="sf-info-card mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div>
+                        <span class="badge rounded-pill text-bg-light mb-2">Order Details</span>
+                        <h1 class="h3 fw-bold mb-2">{{ $order->order_number }}</h1>
+                        <div class="text-secondary">Placed on {{ \App\Support\StoreDate::dateTime($order->placed_at) }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-semibold fs-4">{{ \App\Support\StoreCurrency::format($order->total_amount, 0) }}</div>
+                        <span class="badge rounded-pill text-bg-{{ $displayPaymentStatus === 'paid' ? 'success' : ($displayPaymentStatus === 'cancelled' ? 'secondary' : 'warning') }}">
+                            {{ ucfirst($displayPaymentStatus) }}
+                        </span>
+                        <div class="small text-secondary mt-1">Order status: <span id="order-status">{{ \App\Support\OrderStatus::label($order->order_status) }}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-detail-grid">
+                <div class="sf-info-card">
+                    <h4 class="mb-3">Order Items</h4>
+                    <div class="d-grid gap-3">
+                        <?php foreach ($order->items as $item): ?>
+                            <?php
+                                $baseUnit = \App\Support\StoreOfferPricing::orderItemBaseUnit($item);
+                                $offerUnit = \App\Support\StoreOfferPricing::orderItemOfferUnit($item);
+                                $itemSavings = \App\Support\StoreOfferPricing::orderItemSavings($item);
+                                $discountLabel = \App\Support\StoreOfferPricing::discountLabel($item->product, $baseUnit, $offerUnit);
+                            ?>
+                            <div class="sf-sidepanel p-3">
+                                <div class="d-flex justify-content-between gap-3 align-items-center">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        @if ($item->product)
+                                            <a href="{{ route('storefront.product', $item->product) }}" class="flex-shrink-0">
+                                                <img src="{{ \App\Support\StoreImage::product($item->product) }}" alt="{{ $item->item_name }}" style="width: 56px; height: 56px; object-fit: cover; border-radius: 10px;" onerror="{{ \App\Support\StoreImage::onError('product') }}">
+                                            </a>
+                                        @endif
+                                        <div>
+                                            <a href="{{ $item->product ? route('storefront.product', $item->product) : '#' }}" class="fw-semibold text-decoration-none text-dark">{{ $item->item_name }}</a>
+                                            <div class="small text-secondary">
+                                                {{ $item->quantity }} &times; Offer price: <span class="fw-semibold text-success">{{ \App\Support\StoreCurrency::format($offerUnit, 0) }}</span>
+                                                @if ($baseUnit > $offerUnit)
+                                                    <span class="text-decoration-line-through ms-1">{{ \App\Support\StoreCurrency::format($baseUnit, 0) }}</span>
+                                                @endif
+                                            </div>
+                                            @if ($itemSavings > 0)
+                                                <div class="small text-success">{{ $discountLabel ?? 'Offer applied' }}. You saved {{ \App\Support\StoreCurrency::format($itemSavings, 0) }}.</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="fw-semibold">{{ \App\Support\StoreCurrency::format($item->subtotal, 0) }}</div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="sf-info-card">
+                    <h4 class="mb-3">Summary</h4>
+                    <dl class="sf-specs mb-0">
+                        <dt>Vendor</dt><dd>{{ $order->vendor?->vendor_name ?? '-' }}</dd>
+                        <dt>Payment Method</dt><dd>{{ ucfirst($latestPayment?->payment_method ?? 'cod') }}</dd>
+                        <dt>Payment Status</dt><dd>{{ ucfirst($displayPaymentStatus) }}</dd>
+                        <dt>Item Total</dt><dd>{{ \App\Support\StoreCurrency::format($itemTotal, 0) }}</dd>
+                        @if ($couponCode)
+                            <dt>Coupon</dt><dd>{{ $couponCode }}</dd>
+                            <dt>Coupon Discount</dt><dd class="text-success">-{{ \App\Support\StoreCurrency::format($couponDiscount, 0) }}</dd>
+                        @endif
+                        <dt>Delivery Charge</dt><dd>{{ \App\Support\StoreCurrency::format($order->delivery_charge, 0) }}</dd>
+                        <dt>Amount Payable</dt><dd class="fw-semibold">{{ \App\Support\StoreCurrency::format($order->total_amount, 0) }}</dd>
+                        <dt>Order Status</dt><dd id="order-status-summary">{{ \App\Support\OrderStatus::label($order->order_status) }}</dd>
+                    </dl>
+
+                    @if ($orderStatus !== 'cancelled' && ($latestPayment?->payment_method ?? null) === 'online' && in_array($latestPayment?->status, ['pending', 'failed'], true))
+                        <form method="POST" action="{{ route('storefront.orders.retry-payment', $order) }}" class="mt-4">
+                            @csrf
+                            <button class="btn btn-danger w-100 rounded-pill">Pay with Stripe</button>
+                            <div class="small text-secondary mt-2">A new Stripe checkout session will be created for this order.</div>
+                        </form>
+                    @endif
+
+                    @if (\App\Support\OrderStatus::customerCanCancel($orderStatus))
+                        <form method="POST" action="{{ route('storefront.orders.cancel-order', $order) }}" class="mt-3 js-order-cancel-form">
+                            @csrf
+                            <button class="btn btn-outline-dark w-100 rounded-pill">Cancel Order</button>
+                        </form>
+                    @endif
+
+                    <form method="POST" action="{{ route('storefront.orders.reorder', $order) }}" class="mt-3">
+                        @csrf
+                        <button class="btn btn-outline-dark w-100 rounded-pill">Reorder</button>
+                    </form>
+
+                    <a href="{{ route('storefront.account') }}" class="btn btn-outline-dark w-100 rounded-pill mt-3">Back to Account</a>
+                </div>
+            </div>
+        </section>
+    </main>
+@endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const statusUrl = @json(route('storefront.orders.status', $order));
+            const initialStatus = @json($order->order_status);
+            const statusEls = [
+                document.getElementById('order-status'),
+                document.getElementById('order-status-summary'),
+            ].filter(Boolean);
+
+            if (!statusEls.length) {
+                return;
+            }
+
+            const refreshStatus = async () => {
+                const response = await fetch(statusUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                const payload = await response.json();
+
+                // The stage changed: reload so the buttons (e.g. Cancel) match the new status too.
+                if (payload.status && payload.status !== initialStatus) {
+                    window.location.reload();
+
+                    return;
+                }
+
+                if (payload.label) {
+                    statusEls.forEach((el) => {
+                        el.textContent = payload.label;
+                    });
+                }
+            };
+
+            window.setInterval(() => {
+                refreshStatus().catch(() => {});
+            }, 10000);
+        })();
+    </script>
+@endpush

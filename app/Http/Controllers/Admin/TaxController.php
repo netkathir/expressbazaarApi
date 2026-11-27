@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\RegionZone;
+use App\Models\Tax;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class TaxController extends Controller
+{
+    public function index(Request $request)
+    {
+        $taxes = Tax::query()
+            ->with('country')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim((string) $request->string('search'));
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('tax_name', 'like', "%{$search}%");
+                });
+                $this->prioritizePrefixSearch($query, ['tax_name'], $search);
+            })
+            ->when($request->filled('country_id'), fn ($query) => $query->where('country_id', $request->integer('country_id')))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->latest()
+            ->paginate(\App\Support\PerPage::size(10))
+            ->withQueryString();
+
+        return view('admin.taxes.index', [
+            'title' => 'Tax Master',
+            'activeMenu' => 'taxes',
+            'taxes' => $taxes,
+            'countries' => Country::orderBy('country_name')->get(),
+        ]);
+    }
+
+    public function create()
+    {
+        return view('admin.taxes.form', [
+            'title' => 'Add Tax',
+            'activeMenu' => 'taxes',
+            'tax' => new Tax(),
+            'countries' => Country::orderBy('country_name')->get(),
+            'regions' => RegionZone::with('country')->orderBy('zone_name')->get(),
+            'mode' => 'create',
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validateTax($request);
+        $data['created_by'] = $request->user()?->id;
+        $data['updated_by'] = $request->user()?->id;
+
+        Tax::create($data);
+
+        return $this->redirectToIndex($request, 'admin.taxes.index', 'Tax created successfully.');
+    }
+
+    public function edit(Tax $tax)
+    {
+        return view('admin.taxes.form', [
+            'title' => 'Edit Tax',
+            'activeMenu' => 'taxes',
+            'tax' => $tax,
+            'countries' => Country::orderBy('country_name')->get(),
+            'regions' => RegionZone::with('country')->orderBy('zone_name')->get(),
+            'mode' => 'edit',
+        ]);
+    }
+
+    public function update(Request $request, Tax $tax)
+    {
+        $data = $this->validateTax($request, $tax);
+        $data['updated_by'] = $request->user()?->id;
+
+        $tax->update($data);
+
+        return $this->redirectToIndex($request, 'admin.taxes.index', 'Tax updated successfully.');
+    }
+
+    public function destroy(Request $request, Tax $tax)
+    {
+        $this->deleteFromDatabase($tax);
+
+        return $this->redirectToIndex($request, 'admin.taxes.index', 'Tax deleted successfully.');
+    }
+
+    private function validateTax(Request $request, ?Tax $tax = null): array
+    {
+        $request->merge([
+            'tax_name' => trim((string) $request->input('tax_name')),
+            'region_name' => trim((string) $request->input('region_name')),
+        ]);
+
+        return $request->validate([
+            'tax_name' => ['required', 'string', 'max:255', 'regex:/^(?=.*[A-Za-z0-9])[A-Za-z0-9 .&\'()\/-]+$/', Rule::unique('taxes', 'tax_name')->ignore($tax?->id)],
+            'tax_percentage' => ['required', 'numeric', 'min:0', 'max:100', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'region_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::exists('regions_zones', 'zone_name')->where('country_id', $request->input('country_id')),
+            ],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ], [
+            'tax_name.regex' => 'Tax name must include letters or numbers and cannot contain unsupported special characters.',
+            'tax_percentage.regex' => 'Percentage can have up to two decimal places.',
+            'country_id.required' => 'Select a country.',
+            'region_name.required' => 'Region is required.',
+            'region_name.exists' => 'Select a valid region for the selected country.',
+        ]);
+    }
+}

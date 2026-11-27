@@ -1,0 +1,1560 @@
+/* Global non-breaking typography refinements for admin and customer UI */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+    font-size: 10px !important;
+    opacity: .85;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    font-size: 10px !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+    font-size: 10px !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+    font-size: 10px !important;
+}
+
+.admin-shell .form-select,
+.admin-shell .select-field-placeholder,
+.storefront-shell .modal .form-select {
+    font-size: 12px !important;
+}
+
+.admin-shell input.form-control,
+.admin-shell select.form-select {
+    height: 42px !important;
+    min-height: 42px !important;
+    line-height: 1.4 !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+.admin-shell textarea.form-control {
+    min-height: 42px !important;
+    line-height: 1.4 !important;
+}
+
+.subtitle,
+.sub-title,
+.section-subtitle,
+.card-subtitle,
+.page-subtitle,
+.form-text,
+.text-muted,
+.small-title {
+    font-size: 14px !important;
+    line-height: 1.4;
+}
+
+.search-box input,
+.header-search input,
+.global-search input {
+    height: 40px !important;
+    font-size: 14px !important;
+    padding: 8px 14px !important;
+}
+
+.search-box,
+.header-search {
+    max-width: 420px;
+    width: 100%;
+}
+
+/* Hide decorative helper copy across admin, vendor, and customer views without removing markup. */
+.sf-kicker,
+.sf-how-badge,
+.sf-category-strip-header p,
+.sf-section-header p,
+.sf-hero-card p,
+.sf-banner-copy p,
+.sf-mini-step .text-secondary.small,
+.storefront-shell .modal-header .text-secondary.small,
+.storefront-shell .form-text,
+.storefront-shell .subtitle,
+.storefront-shell .sub-title,
+.storefront-shell .section-subtitle,
+.storefront-shell .card-subtitle,
+.storefront-shell .page-subtitle,
+.storefront-shell .small-title,
+.admin-shell .form-text,
+.admin-shell .subtitle,
+.admin-shell .sub-title,
+.admin-shell .section-subtitle,
+.admin-shell .card-subtitle,
+.admin-shell .page-subtitle,
+.admin-shell .small-title,
+.admin-shell .hero-card p.text-secondary,
+.admin-dashboard .hero-card p,
+.admin-dashboard .hero-card .badge,
+.admin-dashboard .soft-panel > .d-flex > div > .text-secondary.small:last-child,
+.admin-dashboard .soft-panel .admin-mini-stat-grid + .text-secondary.small,
+.admin-dashboard .admin-kpi-card .text-secondary.small:last-child,
+.admin-dashboard h5 + .text-secondary.small,
+.admin-dashboard .admin-disabled-analytics span {
+    display: none !important;
+}
+
+.admin-shell .card,
+.admin-shell .shell-card,
+.admin-shell .soft-panel,
+.admin-shell .metric-card,
+.admin-shell .dashboard-card,
+.admin-shell .module-card,
+.storefront-shell .sf-info-card,
+.storefront-shell .sf-product-card,
+.storefront-shell .sf-mini-step,
+.storefront-shell .sf-banner-card,
+.storefront-shell .sf-cart-drawer,
+.storefront-shell .modal-content {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.admin-shell .card *,
+.admin-shell .shell-card *,
+.admin-shell .soft-panel *,
+.admin-shell .metric-card *,
+.admin-shell .dashboard-card *,
+.admin-shell .module-card *,
+.storefront-shell .sf-info-card *,
+.storefront-shell .sf-product-card *,
+.storefront-shell .sf-mini-step *,
+.storefront-shell .sf-banner-card *,
+.storefront-shell .sf-cart-drawer *,
+.storefront-shell .modal-content * {
+    max-width: 100%;
+}
+
+/* Keep helpful sub messages visible only for storefront promo banners and how-it-works steps. */
+.storefront-shell .sf-banner-copy p,
+.storefront-shell .sf-how-it-works .sf-mini-step .text-secondary.small {
+    display: block !important;
+}
+
+.storefront-shell .sf-banner-copy p {
+    margin-top: 6px;
+    color: #fff !important;
+    font-size: .92rem;
+    line-height: 1.35;
+}
+
+.storefront-shell .sf-how-it-works .sf-mini-step .text-secondary.small {
+    margin-top: 4px;
+    color: var(--sf-muted) !important;
+    font-size: .9rem;
+    line-height: 1.35;
+}
+
+.admin-shell .admin-page-title {
+    font-size: clamp(1.95rem, 1.85vw + 1rem, 2.35rem);
+    font-weight: 500;
+}
+
+.storefront-shell .sf-promo-card-primary {
+    position: relative;
+}
+
+.storefront-shell .sf-promo-nav {
+    position: absolute;
+    top: 50%;
+    z-index: 4;
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(4, 120, 87, .18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .94);
+    color: #047857;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .14);
+    transform: translateY(-50%);
+    transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.storefront-shell .sf-promo-nav:hover,
+.storefront-shell .sf-promo-nav:focus-visible {
+    background: #047857;
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(4, 120, 87, .22);
+    transform: translateY(-50%) scale(1.04);
+}
+
+.storefront-shell .sf-promo-nav-prev {
+    left: 14px;
+}
+
+.storefront-shell .sf-promo-card-primary .sf-promo-copy {
+    padding-left: clamp(72px, 6vw, 112px);
+}
+
+.storefront-shell .sf-promo-nav-next {
+    right: 14px;
+}
+
+@media (max-width: 575.98px) {
+    .storefront-shell .sf-promo-showcase {
+        margin-top: 4px;
+        margin-bottom: 10px;
+    }
+
+    .storefront-shell .sf-promo-grid {
+        gap: 10px;
+    }
+
+    .storefront-shell .sf-promo-card {
+        border-radius: 14px;
+    }
+
+    .storefront-shell .sf-promo-card-primary {
+        touch-action: pan-y;
+    }
+
+    .storefront-shell .sf-promo-copy,
+    .storefront-shell .sf-promo-card-primary .sf-promo-copy {
+        padding: 16px;
+    }
+
+    .storefront-shell .sf-promo-eyebrow,
+    .storefront-shell .sf-promo-kicker {
+        margin-bottom: 6px;
+        font-size: .64rem;
+    }
+
+    .storefront-shell .sf-promo-card h1 {
+        font-size: 1.55rem;
+    }
+
+    .storefront-shell .sf-promo-card h2 {
+        font-size: 1.38rem;
+    }
+
+    .storefront-shell .sf-promo-card p {
+        margin-top: 8px;
+        font-size: .82rem;
+    }
+
+    .storefront-shell .sf-promo-actions {
+        margin-top: 12px;
+    }
+
+    .storefront-shell .sf-promo-actions .btn,
+    .storefront-shell .sf-promo-card-deal .btn {
+        min-height: 36px;
+        padding-block: 7px;
+        font-size: .84rem;
+    }
+
+    .storefront-shell .sf-promo-visual,
+    .storefront-shell .sf-deal-basket {
+        padding: 0 16px 18px;
+    }
+
+    .storefront-shell .sf-promo-offer-frame {
+        width: min(100%, 240px);
+        border-radius: 14px;
+    }
+
+    .storefront-shell .sf-promo-dots {
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%);
+    }
+
+    .storefront-shell .sf-promo-nav {
+        width: 34px;
+        height: 34px;
+    }
+
+    .storefront-shell .sf-promo-nav-prev {
+        left: 10px;
+    }
+
+    .storefront-shell .sf-promo-nav-next {
+        right: 10px;
+    }
+
+    .storefront-shell .sf-deal-product-card {
+        width: min(100%, 190px);
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .storefront-shell .sf-deal-basket strong {
+        width: 48px;
+        height: 48px;
+        top: 4px;
+        right: 18px;
+        font-size: .54rem;
+    }
+
+    .storefront-shell .sf-promo-benefits {
+        margin: 10px 0;
+        gap: 6px;
+    }
+
+    .storefront-shell .sf-promo-benefits i {
+        width: 26px;
+        height: 26px;
+        margin-bottom: 4px;
+    }
+
+    .storefront-shell .sf-banner-grid {
+        gap: 10px;
+    }
+
+    .storefront-shell .sf-banner-card {
+        min-height: 118px;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .storefront-shell .sf-banner-copy h2 {
+        margin-top: 5px;
+        margin-bottom: 4px;
+        font-size: .92rem;
+    }
+
+    .storefront-shell .sf-banner-copy p {
+        margin-top: 4px;
+        font-size: .78rem;
+        line-height: 1.25;
+    }
+}
+
+/* Keep auth logos even across customer login, create account, and admin login. */
+.storefront-shell .login-logo,
+.admin-shell .auth-panel-logo {
+    display: block;
+    width: min(260px, 100%);
+    height: 76px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+}
+
+.storefront-shell .auth-logo {
+    margin-top: 0;
+}
+
+/* Header account/cart actions as stacked icon labels. */
+.storefront-shell .sf-actions {
+    align-items: center;
+    gap: 14px;
+}
+
+.storefront-shell .sf-actions .sf-action-link {
+    display: inline-grid;
+    grid-template-rows: auto auto;
+    place-items: center;
+    min-width: 42px;
+    min-height: 46px;
+    padding: 0;
+    gap: 2px;
+    border: 0;
+    background: transparent;
+    color: #111;
+    font-size: .72rem;
+    font-weight: 500;
+    line-height: 1.05;
+    text-decoration: none;
+}
+
+.storefront-shell .sf-actions .sf-action-link > i {
+    color: #111;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.storefront-shell .sf-actions .js-open-cart > i {
+    font-size: 1.9rem;
+}
+
+.storefront-shell .sf-actions .sf-cart-badge {
+    top: -3px;
+    right: 2px;
+}
+
+/* Compact category listing typography without changing link/filter behavior. */
+.storefront-shell .sf-category-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 18px;
+}
+
+.storefront-shell .sf-category-sidebar {
+    padding: 14px;
+    border-radius: 18px;
+}
+
+.storefront-shell .sf-category-sidebar h4 {
+    margin-bottom: 12px !important;
+    font-size: .88rem;
+    line-height: 1.22;
+}
+
+.storefront-shell .sf-category-sidebar .sf-side-links {
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.storefront-shell .sf-category-sidebar .sf-side-links a {
+    min-height: 48px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: .68rem;
+    line-height: 1.18;
+}
+
+.storefront-shell .sf-category-sidebar .sf-side-links a img {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+}
+
+.storefront-shell .sf-category-sidebar .sf-side-links a span {
+    min-width: 0;
+}
+
+/* Reduce category/subcategory filter wording size without changing links or form behavior. */
+.storefront-shell .sf-filter-row .sf-filter-pill {
+    font-size: .8rem;
+    line-height: 1.15;
+}
+
+.storefront-shell .sf-filter-row .form-select {
+    font-size: .8rem !important;
+}
+
+@media (max-width: 991.98px) {
+    .storefront-shell .sf-category-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Align the home page "Shop by categories" rail without changing its scroll behavior. */
+.storefront-shell .sf-category-rail-wrap {
+    --sf-category-tile: clamp(92px, 6.2vw, 124px);
+    padding-right: 42px;
+}
+
+.storefront-shell .sf-category-rail-wrap .sf-chip-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--sf-category-tile);
+    grid-template-columns: none;
+    align-items: start;
+    gap: clamp(12px, 1vw, 20px);
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.storefront-shell .sf-category-rail-wrap .sf-chip {
+    width: var(--sf-category-tile);
+    justify-items: center;
+    align-content: start;
+    gap: 8px;
+    font-size: clamp(.72rem, .24vw + .72rem, .88rem);
+}
+
+.storefront-shell .sf-category-rail-wrap .sf-chip-image {
+    width: var(--sf-category-tile);
+    height: var(--sf-category-tile);
+    flex: 0 0 var(--sf-category-tile);
+}
+
+.storefront-shell .sf-category-rail-wrap .sf-chip > span:last-child {
+    display: -webkit-box;
+    min-height: 2.45em;
+    max-height: 2.45em;
+    width: 100%;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.22;
+    text-align: center;
+    overflow: hidden;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-right {
+    display: inline-flex;
+    right: 2px;
+    top: calc(var(--sf-category-tile) / 2);
+    width: 38px;
+    height: 38px;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-left {
+    left: 2px;
+    top: calc(var(--sf-category-tile) / 2);
+    width: 38px;
+    height: 38px;
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    transform: translateY(-50%);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, .22);
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow:not(.can-scroll-left) .sf-rail-arrow-left,
+.storefront-shell .sf-category-rail-wrap.has-overflow:not(.can-scroll-right) .sf-rail-arrow-right {
+    display: none !important;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow.can-scroll-left .sf-rail-arrow-left {
+    display: inline-flex !important;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow::after {
+    height: var(--sf-category-tile);
+    opacity: 0;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow.can-scroll-right::after {
+    opacity: 1;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 92px;
+    height: var(--sf-category-tile);
+    pointer-events: none;
+    background: linear-gradient(270deg, rgba(249, 249, 249, 0), var(--sf-bg) 72%);
+    opacity: 0;
+}
+
+.storefront-shell .sf-category-rail-wrap.has-overflow.can-scroll-left::before {
+    opacity: 1;
+}
+
+/* Show the category header beside the home category rail without changing rail scrolling. */
+.storefront-shell .sf-category-showcase {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(14px, 1.4vw, 24px);
+    margin-bottom: clamp(16px, 1.8vw, 28px);
+}
+
+.storefront-shell .sf-category-showcase .sf-category-strip-header {
+    display: flex !important;
+    flex: 0 0 clamp(150px, 13vw, 220px);
+    min-width: 0;
+    margin: 0;
+    padding-top: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.storefront-shell .sf-category-showcase .sf-category-strip-header h2 {
+    margin: 0;
+    font-size: clamp(1rem, .45vw + .95rem, 1.22rem);
+    line-height: 1.18;
+}
+
+.storefront-shell .sf-category-showcase .sf-category-strip-header p {
+    margin: 0;
+    font-size: .78rem;
+    line-height: 1.35;
+}
+
+.storefront-shell .sf-category-showcase .sf-category-strip-header a {
+    font-size: .78rem;
+    line-height: 1.2;
+}
+
+.storefront-shell .sf-category-showcase .sf-category-rail-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-category-showcase {
+        display: block;
+    }
+
+    .storefront-shell .sf-category-showcase .sf-category-strip-header {
+        margin-bottom: 10px;
+        padding-top: 0;
+    }
+}
+
+/* Compact the marked storefront header controls and category strip. */
+.storefront-shell {
+    --sf-header-control-height: 38px;
+}
+
+.storefront-shell .sf-searchbar {
+    padding-block: 8px;
+    gap: 12px;
+}
+
+.storefront-shell .sf-topbar .sf-brand-logo {
+    height: 64px !important;
+    max-width: min(320px, 100%);
+}
+
+.storefront-shell .sf-logo {
+    align-items: center;
+}
+
+.storefront-shell .sf-header-controls {
+    gap: 10px;
+}
+
+.storefront-shell .sf-header-controls .sf-location-btn,
+.storefront-shell .sf-header-controls .sf-vendor-btn {
+    padding-inline: 12px;
+    font-size: 13px;
+}
+
+.storefront-shell .sf-header-controls .sf-search-form {
+    grid-template-columns: var(--sf-header-control-height) minmax(0, 1fr);
+}
+
+.storefront-shell .sf-header-controls .sf-search-form > i {
+    width: var(--sf-header-control-height);
+}
+
+.storefront-shell .sf-header-controls .sf-search-form input {
+    font-size: 13px;
+    padding-inline: 12px;
+}
+
+.storefront-shell .sf-category-showcase {
+    background: var(--sf-bg);
+    padding-top: 18px !important;
+    padding-bottom: 6px;
+}
+
+.storefront-shell .sf-category-rail-wrap {
+    background: var(--sf-bg);
+}
+
+.storefront-shell .sf-category-rail-wrap .sf-chip-image {
+    background: var(--sf-surface);
+}
+
+@media (min-width: 992px) {
+    .storefront-shell .sf-header-controls {
+        width: min(100%, 760px);
+        grid-template-columns: minmax(160px, 200px) minmax(120px, 150px) minmax(260px, 390px);
+    }
+
+    .storefront-shell .sf-header-controls .sf-vendor-selector.d-none + .sf-search-form,
+    .storefront-shell .sf-header-controls .sf-search-form {
+        grid-column: auto;
+        max-width: none;
+    }
+
+    .storefront-shell .sf-header-controls .sf-vendor-selector.d-none + .sf-search-form {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .storefront-shell .sf-searchbar {
+        padding-block: 8px;
+    }
+
+    .storefront-shell .sf-topbar .sf-brand-logo {
+        height: 58px !important;
+        max-width: min(230px, 100%);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .storefront-shell .sf-topbar {
+        transition: box-shadow .18s ease;
+    }
+
+    .storefront-shell .sf-topbar .sf-logo,
+    .storefront-shell .sf-topbar .sf-location-btn,
+    .storefront-shell .sf-topbar .sf-vendor-selector {
+        max-height: 80px;
+        opacity: 1;
+        overflow: hidden;
+        transform: translateY(0);
+        transition: max-height .2s ease, opacity .18s ease, transform .18s ease, margin .18s ease;
+    }
+
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-logo,
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-location-btn,
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-vendor-selector {
+        max-height: 0;
+        margin: 0;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px);
+    }
+
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-searchbar {
+        padding-block: 6px;
+    }
+
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-header-controls {
+        gap: 0;
+    }
+
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-search-form,
+    .storefront-shell .sf-topbar.is-mobile-compact .sf-actions {
+        position: relative;
+        z-index: 1;
+    }
+
+    .storefront-shell .sf-section-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 10px;
+    }
+
+    .storefront-shell .sf-section-header > div {
+        min-width: 0;
+    }
+
+    .storefront-shell .sf-section-header > a {
+        justify-self: end;
+        white-space: nowrap;
+    }
+
+    .storefront-shell .sf-section-header > a i {
+        display: none;
+    }
+
+    .storefront-shell .sf-searchbar {
+        padding-block: 6px;
+        gap: 8px;
+    }
+
+    .storefront-shell .sf-logo {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .storefront-shell .sf-topbar .sf-brand-logo {
+        height: 46px !important;
+        max-width: min(190px, 100%);
+    }
+
+    .storefront-shell .sf-location-btn,
+    .storefront-shell .sf-vendor-btn,
+    .storefront-shell .sf-search-form,
+    .storefront-shell .sf-actions .sf-action-link {
+        min-height: 36px;
+    }
+
+    .storefront-shell .sf-header-controls {
+        gap: 8px;
+    }
+
+    .storefront-shell .sf-header-controls .sf-location-btn,
+    .storefront-shell .sf-header-controls .sf-vendor-btn {
+        padding-inline: 10px;
+        font-size: 12px;
+    }
+
+    .storefront-shell .sf-header-controls .sf-search-form input {
+        font-size: 12px;
+        padding-inline: 10px;
+    }
+
+    .storefront-shell .sf-category-rail-wrap {
+        padding-right: 0;
+    }
+
+    .storefront-shell .sf-category-rail-wrap .sf-rail-arrow,
+    .storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-left,
+    .storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-right {
+        display: none !important;
+    }
+
+    .storefront-shell .sf-category-rail-wrap.has-overflow::before,
+    .storefront-shell .sf-category-rail-wrap.has-overflow::after {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .storefront-shell .sf-topbar .sf-brand-logo {
+        height: 42px !important;
+        max-width: min(180px, 100%);
+    }
+
+    .storefront-shell .sf-location-btn,
+    .storefront-shell .sf-vendor-btn,
+    .storefront-shell .sf-search-form,
+    .storefront-shell .sf-actions .sf-action-link {
+        min-height: 34px;
+    }
+
+    .storefront-shell .sf-category-rail-wrap {
+        --sf-category-tile: 86px;
+        padding-right: 0;
+    }
+
+    .storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-left,
+    .storefront-shell .sf-category-rail-wrap.has-overflow .sf-rail-arrow-right {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    input::placeholder,
+    textarea::placeholder,
+    select::placeholder {
+        font-size: 9px !important;
+    }
+
+    .subtitle,
+    .sub-title,
+    .section-subtitle,
+    .card-subtitle,
+    .page-subtitle,
+    .form-text,
+    .text-muted,
+    .small-title {
+        font-size: 13px !important;
+    }
+
+    .search-box input,
+    .header-search input,
+    .global-search input {
+        height: 36px !important;
+        font-size: 13px !important;
+    }
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link {
+    min-height: 36px;
+    min-width: 148px;
+    padding: 0 14px 0 12px;
+    border: 1px solid rgba(31, 122, 99, .28);
+    border-radius: 999px;
+    background: #fff;
+    color: #1f7a63;
+    box-shadow: 0 6px 18px rgba(31, 122, 99, .08);
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link > i {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(31, 122, 99, .28);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #1f7a63;
+    font-size: 14px;
+    line-height: 1;
+    flex: 0 0 22px;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link__item {
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    min-width: 0;
+    overflow-wrap: normal;
+    text-decoration: none;
+    word-break: normal;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link__item:hover,
+.storefront-shell .sf-actions .sf-login-signup-link__item:focus {
+    color: inherit;
+    text-decoration: none;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link__item:focus-visible {
+    border-radius: 999px;
+    outline: 2px solid rgba(31, 122, 99, .36);
+    outline-offset: 2px;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link__divider {
+    align-self: center;
+    background: rgba(31, 122, 99, .72);
+    display: inline-block;
+    height: 18px;
+    width: 2px;
+}
+
+.storefront-shell .sf-actions .sf-login-signup-link:hover,
+.storefront-shell .sf-actions .sf-login-signup-link:focus-within {
+    border-color: rgba(31, 122, 99, .48);
+    color: #1f7a63;
+    background: #fff;
+    box-shadow: 0 8px 22px rgba(31, 122, 99, .12);
+}
+
+@media (max-width: 575.98px) {
+    .storefront-shell .sf-actions .sf-login-signup-link {
+        min-width: 136px;
+        padding-inline: 10px 12px;
+        font-size: 11px;
+    }
+}
+
+/*
+ * Compact list pages (admin + vendor panels): any page whose table card is a direct child of the page
+ * container gets a slimmer header/filter area and a denser table, so the data starts higher.
+ */
+.admin-shell main.content:has(> .container-fluid > .shell-card > .table-responsive) {
+    padding-top: 74px !important;
+    padding-bottom: 1rem !important;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) {
+    margin-bottom: .75rem !important;
+    border-radius: 12px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) > .card-body {
+    padding: .5rem 1rem !important;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) h1 {
+    margin: 0 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.3 !important;
+    font-weight: 600;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) p.text-secondary,
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) .text-secondary.small {
+    margin-bottom: 0 !important;
+    font-size: 12px !important;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) .row {
+    --bs-gutter-x: .75rem;
+    --bs-gutter-y: .5rem;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) .form-label {
+    margin-bottom: 2px;
+    font-size: 12px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) input.form-control,
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) select.form-select {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    font-size: 13px !important;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card:not(:has(> .table-responsive)) .btn {
+    padding: .25rem .7rem;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table thead th {
+    padding: 9px 10px;
+    font-size: 13px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td {
+    padding: .4rem 10px;
+    font-size: 13px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td .badge {
+    font-size: .62rem;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td small,
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td .small {
+    font-size: 11.5px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td .ti {
+    font-size: 15px;
+}
+
+.admin-shell main > .container-fluid:has(> .shell-card > .table-responsive) > .shell-card > .table-responsive > .table tbody td .btn {
+    padding: .2rem .55rem;
+    font-size: 12px;
+}
+
+/* Auth pages: match the home banner backdrop */
+.storefront-shell .sf-auth-page ,
+.sf-auth-body .sf-auth-page {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 8% 18%, rgba(163, 214, 92, .22) 0 11%, transparent 11.5%),
+        radial-gradient(circle at 92% 82%, rgba(163, 214, 92, .24) 0 16%, transparent 16.5%),
+        radial-gradient(circle at 96% 14%, rgba(31, 122, 99, .10) 0 14%, transparent 14.5%),
+        radial-gradient(circle at 3% 90%, rgba(31, 122, 99, .08) 0 12%, transparent 12.5%),
+        linear-gradient(135deg, #fffdf7 0%, #f3f9e6 100%);
+}
+
+.storefront-shell .sf-auth-page .sf-info-card ,
+.sf-auth-body .sf-auth-page .sf-info-card {
+    position: relative;
+    border: 1px solid rgba(31, 122, 99, .15);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+    backdrop-filter: blur(4px);
+}
+
+/* Auth pages: draggable fruit / vegetable illustrations (positions reset on refresh) */
+.storefront-shell .sf-auth-page > .container ,
+.sf-auth-body .sf-auth-page > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.storefront-shell .sf-fruit ,
+.sf-auth-body .sf-fruit {
+    position: absolute;
+    z-index: 2;
+    width: var(--s, 72px);
+    height: var(--s, 72px);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.storefront-shell .sf-fruit.is-dragging ,
+.sf-auth-body .sf-fruit.is-dragging {
+    z-index: 5;
+    cursor: grabbing;
+}
+
+.storefront-shell .sf-fruit > span ,
+.sf-auth-body .sf-fruit > span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: center / contain no-repeat;
+    animation: sf-fruit-float 4.5s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+    transition: transform .18s ease, filter .18s ease;
+    pointer-events: none;
+}
+
+.storefront-shell .sf-fruit:hover > span ,
+.sf-auth-body .sf-fruit:hover > span {
+    transform: scale(1.12) rotate(-6deg);
+}
+
+.storefront-shell .sf-fruit.is-dragging > span ,
+.sf-auth-body .sf-fruit.is-dragging > span {
+    animation-play-state: paused;
+    transform: scale(1.22) rotate(8deg);
+    filter: drop-shadow(0 14px 14px rgba(15, 23, 42, .25));
+}
+
+.storefront-shell .sf-fruit-lemon > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='52' rx='34' ry='26' fill='%23f7d83a' transform='rotate(-20 50 52)'/%3E%3Cpath d='M18 64C12 66 10 60 14 58Z M84 40C90 38 92 44 88 46Z' fill='%23e9c423'/%3E%3Cellipse cx='42' cy='44' rx='10' ry='5' fill='%23ffffff' opacity='.35' transform='rotate(-20 42 44)'/%3E%3Cpath d='M66 24C72 16 82 16 86 22C78 24 72 26 66 24Z' fill='%233fb76f'/%3E%3C/svg%3E"); }
+.sf-auth-body .sf-fruit-lemon > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='52' rx='34' ry='26' fill='%23f7d83a' transform='rotate(-20 50 52)'/%3E%3Cpath d='M18 64C12 66 10 60 14 58Z M84 40C90 38 92 44 88 46Z' fill='%23e9c423'/%3E%3Cellipse cx='42' cy='44' rx='10' ry='5' fill='%23ffffff' opacity='.35' transform='rotate(-20 42 44)'/%3E%3Cpath d='M66 24C72 16 82 16 86 22C78 24 72 26 66 24Z' fill='%233fb76f'/%3E%3C/svg%3E"); }
+.storefront-shell .sf-fruit-orange > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='56' r='34' fill='%23f6902c'/%3E%3Ccircle cx='40' cy='46' r='8' fill='%23ffffff' opacity='.25'/%3E%3Cpath d='M50 22C48 12 58 6 66 10C60 14 58 20 56 24Z' fill='%233fb76f'/%3E%3Crect x='48' y='20' width='4' height='8' rx='2' fill='%232d6a3e'/%3E%3C/svg%3E"); }
+.sf-auth-body .sf-fruit-orange > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='56' r='34' fill='%23f6902c'/%3E%3Ccircle cx='40' cy='46' r='8' fill='%23ffffff' opacity='.25'/%3E%3Cpath d='M50 22C48 12 58 6 66 10C60 14 58 20 56 24Z' fill='%233fb76f'/%3E%3Crect x='48' y='20' width='4' height='8' rx='2' fill='%232d6a3e'/%3E%3C/svg%3E"); }
+.storefront-shell .sf-fruit-chilli > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 30C60 22 84 44 78 80C76 88 66 86 66 78C68 56 54 44 34 42C26 42 24 32 30 30Z' fill='%23e23b3b'/%3E%3Cpath d='M30 30C26 20 34 12 42 14C38 18 38 24 36 30Z' fill='%232f9e5b'/%3E%3Cpath d='M50 38C62 42 68 52 70 66' stroke='%23ffffff' stroke-opacity='.3' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.sf-auth-body .sf-fruit-chilli > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 30C60 22 84 44 78 80C76 88 66 86 66 78C68 56 54 44 34 42C26 42 24 32 30 30Z' fill='%23e23b3b'/%3E%3Cpath d='M30 30C26 20 34 12 42 14C38 18 38 24 36 30Z' fill='%232f9e5b'/%3E%3Cpath d='M50 38C62 42 68 52 70 66' stroke='%23ffffff' stroke-opacity='.3' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.storefront-shell .sf-fruit-apple > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 30C36 20 14 30 16 56C18 78 36 92 50 86C64 92 82 78 84 56C86 30 64 20 50 30Z' fill='%237cc243'/%3E%3Cellipse cx='36' cy='50' rx='7' ry='13' fill='%23ffffff' opacity='.28' transform='rotate(-15 36 50)'/%3E%3Cpath d='M50 30C50 22 52 16 58 12' stroke='%235a3a1e' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M56 20C62 12 74 12 78 18C70 22 62 24 56 20Z' fill='%233fb76f'/%3E%3C/svg%3E"); }
+.sf-auth-body .sf-fruit-apple > span { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 30C36 20 14 30 16 56C18 78 36 92 50 86C64 92 82 78 84 56C86 30 64 20 50 30Z' fill='%237cc243'/%3E%3Cellipse cx='36' cy='50' rx='7' ry='13' fill='%23ffffff' opacity='.28' transform='rotate(-15 36 50)'/%3E%3Cpath d='M50 30C50 22 52 16 58 12' stroke='%235a3a1e' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M56 20C62 12 74 12 78 18C70 22 62 24 56 20Z' fill='%233fb76f'/%3E%3C/svg%3E"); }
+
+@keyframes sf-fruit-float {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    50% { translate: 0 -10px; rotate: 5deg; }
+}
+
+@media (max-width: 991.98px), (prefers-reduced-motion: reduce) {
+    .storefront-shell .sf-fruit > span ,
+    .sf-auth-body .sf-fruit > span {
+        animation: none;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .storefront-shell .sf-fruit ,
+    .sf-auth-body .sf-fruit {
+        display: none;
+    }
+}
+
+/* Admin and vendor auth pages share the same backdrop */
+.sf-auth-body .sf-auth-page {
+    min-height: 100vh;
+    background-color: #fffdf7;
+}
+
+.sf-auth-body .sf-auth-page .shell-card {
+    border: 1px solid rgba(31, 122, 99, .15);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+    backdrop-filter: blur(4px);
+}
+
+/* Keep "Shop by category" close to the category chips above it */
+.storefront-shell .sf-category-showcase {
+    margin-bottom: 0;
+}
+
+.storefront-shell #featured-sections {
+    margin-top: 4px !important;
+}
+
+/*
+ * Page header card on every admin/vendor screen: same slim layout as Product Management.
+ * Applies to the first card of a page when it holds the page title.
+ */
+.admin-shell main.content:has(> .container-fluid > .shell-card:first-child h1.h3) {
+    padding-top: 74px !important;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) {
+    margin-bottom: .75rem !important;
+    border-radius: 12px;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) > .card-body {
+    padding: .5rem 1rem !important;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) h1.h3 {
+    margin: 0 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.3 !important;
+    font-weight: 600;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) p.text-secondary,
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) .text-secondary.small {
+    margin-bottom: 0 !important;
+    font-size: 12px !important;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) .form-label {
+    margin-bottom: 2px;
+    font-size: 12px;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) input.form-control,
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) select.form-select {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    font-size: 13px !important;
+}
+
+.admin-shell main > .container-fluid > .shell-card:first-child:has(> .card-body h1.h3) .btn {
+    padding: .25rem .7rem;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Sidebar: parent menu with a show/hide arrow for its sub screens */
+.sidebar .nav-parent-row {
+    position: relative;
+}
+
+.sidebar .nav-parent-row > .nav-link {
+    padding-right: 2.6rem;
+}
+
+.sidebar .nav-toggle {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    display: inline-flex;
+    width: 26px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--admin-muted, #6b7280);
+    transform: translateY(-50%);
+}
+
+.sidebar .nav-toggle:hover,
+.sidebar .nav-toggle:focus-visible {
+    background: rgba(0, 0, 0, .06);
+    color: inherit;
+}
+
+.sidebar .nav-toggle > .ti {
+    font-size: 1rem;
+    transition: transform .18s ease;
+}
+
+.sidebar .nav-parent.is-open .nav-toggle > .ti {
+    transform: rotate(180deg);
+}
+
+.sidebar .nav-children {
+    display: none;
+}
+
+.sidebar .nav-parent.is-open .nav-children {
+    display: block;
+}
+
+.sidebar.collapsed .nav-toggle,
+.sidebar.collapsed .nav-children {
+    display: none;
+}
+
+/* Reports & Analytics: same compact sizing as the other admin pages */
+.admin-shell .admin-report-block {
+    border-radius: 12px;
+    margin-bottom: .75rem !important;
+}
+
+.admin-shell .admin-report-block > .card-body {
+    padding: .75rem 1rem !important;
+}
+
+.admin-shell .admin-report-block .row {
+    --bs-gutter-x: .75rem;
+    --bs-gutter-y: .5rem;
+}
+
+.admin-shell .admin-report-block .form-label {
+    margin-bottom: 2px;
+    font-size: 12px;
+}
+
+.admin-shell .admin-report-block input.form-control,
+.admin-shell .admin-report-block select.form-select {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    font-size: 13px !important;
+}
+
+.admin-shell .admin-report-block .form-check-label,
+.admin-shell .admin-report-block .btn {
+    font-size: 13px;
+}
+
+.admin-shell .admin-report-block .btn {
+    padding: .25rem .7rem;
+    line-height: 1.4;
+}
+
+.admin-shell .admin-report-block h2.h5 {
+    margin: 0 !important;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.admin-shell .admin-report-block .h3,
+.admin-shell .admin-report-block .h4 {
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.admin-shell .admin-report-block .soft-card {
+    padding: .35rem .75rem !important;
+    border-radius: 10px;
+}
+
+.admin-shell .admin-report-block .soft-card .fw-semibold,
+.admin-shell .admin-report-block .soft-card .small {
+    font-size: 13px;
+}
+
+.admin-shell .admin-report-block .table > :not(caption) > * > * {
+    padding: .4rem .65rem;
+    font-size: 13px;
+}
+
+.admin-shell .admin-report-block .table thead th {
+    font-size: 13px;
+}
+
+.admin-shell .admin-report-block .badge {
+    font-size: .68rem;
+}
+
+/* Report filter buttons: same height, text centred (Apply Filters / Reset) */
+.admin-shell .admin-report-block .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    box-sizing: border-box;
+}
+
+.admin-shell .admin-report-block form .ms-auto {
+    align-items: center;
+}
+
+/* The success pop-up must sit above the page loader, otherwise it can be hidden while the page is still loading */
+.admin-flash-backdrop {
+    z-index: 3100;
+}
+
+/* Vendor payout detail: orders table on the left, payout summary on the right */
+.payout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (min-width: 992px) {
+    .payout-layout {
+        grid-template-columns: minmax(0, 1fr) 300px;
+    }
+
+    .payout-side {
+        position: sticky;
+        top: 84px;
+    }
+}
+
+.payout-main {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.payout-main > .shell-card,
+.payout-side > .shell-card {
+    margin: 0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.payout-main .card-body {
+    padding: 0 !important;
+}
+
+.payout-card-title {
+    padding: .65rem 1rem;
+    border-bottom: 1px solid rgba(229, 231, 235, .9);
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.payout-side .card-body {
+    padding: 0 !important;
+}
+
+.payout-side .payout-summary .card-body > :not(.payout-card-title) {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.payout-side .payout-summary .card-body > .payout-card-title {
+    margin-bottom: .75rem;
+}
+
+.payout-side .payout-summary .card-body > :last-child {
+    margin-bottom: 1rem;
+}
+
+.payout-table {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.payout-table thead th {
+    padding: .5rem .75rem;
+    border-bottom: 1px solid rgba(229, 231, 235, .9);
+    background: rgba(0, 0, 0, .02);
+    color: var(--admin-muted, #6b7280);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.payout-table tbody td {
+    padding: .5rem .75rem;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.payout-table tbody td .small,
+.payout-table tbody td.small {
+    font-size: 12px;
+}
+
+.payout-table tbody td a {
+    font-weight: 600;
+}
+
+.payout-table tbody tr.table-warning td:first-child,
+.payout-table tbody td[colspan] {
+    white-space: normal;
+}
+
+.payout-table tbody td:last-child .small {
+    white-space: normal;
+}
+
+.payout-table .badge {
+    font-size: .68rem;
+}
+
+.payout-figures {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .35rem 1rem;
+    margin-bottom: .75rem;
+    font-size: 13px;
+}
+
+.payout-figures dt {
+    font-weight: 400;
+    color: var(--admin-muted, #6b7280);
+}
+
+.payout-figures dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.payout-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(229, 231, 235, .9);
+    font-weight: 600;
+}
+
+.payout-total-amount {
+    font-size: 1.35rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.payout-side .btn {
+    font-size: 13px;
+}
+
+/* Payout tables: fit the column without a sideways scroll bar */
+.payout-table thead th {
+    padding: .5rem .55rem;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 12.5px;
+}
+
+.payout-table tbody td {
+    padding: .5rem .55rem;
+}
+
+.payout-table thead th:first-child,
+.payout-table tbody td:first-child {
+    padding-left: 1rem;
+}
+
+.payout-table thead th:last-child,
+.payout-table tbody td:last-child {
+    padding-right: 1rem;
+}
+
+/* Keep input-group add-ons (e.g. %, GBP) aligned with compact admin inputs */
+.admin-shell .input-group {
+    flex-wrap: nowrap;
+    align-items: stretch;
+}
+
+.admin-shell .input-group > .input-group-text {
+    height: 32px;
+    padding: 0 .75rem;
+    font-size: 13px;
+    line-height: 1.4;
+    align-items: center;
+}
+
+.admin-shell .input-group > input.form-control {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    font-size: 13px !important;
+}
+
+/*
+ * Customer, vendor and admin login pages share one set of sizes (the customer login is the reference).
+ * Scoped to .sf-auth-page so admin-shell compact form rules do not leak into the auth screens.
+ */
+.sf-auth-body .sf-auth-page {
+    display: flex;
+    align-items: center;
+}
+
+.sf-auth-body .sf-auth-page > .container {
+    width: 100%;
+}
+
+body .sf-auth-page .form-label {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: .5rem;
+}
+
+body .sf-auth-page input.form-control,
+body .sf-auth-page .input-group > input.form-control {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: .375rem .75rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+}
+
+body .sf-auth-page .input-group > .btn {
+    height: 38px;
+    padding: .375rem .75rem;
+}
+
+body .sf-auth-page .btn-primary,
+body .sf-auth-page .btn-danger {
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+body .sf-auth-page .form-check-label {
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.sf-auth-body .sf-auth-page a:not(.btn) {
+    color: #1F7A63;
+}

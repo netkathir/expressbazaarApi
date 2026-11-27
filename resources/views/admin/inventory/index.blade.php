@@ -1,0 +1,88 @@
+@extends('layouts.admin')
+
+@section('content')
+    <div class="card shell-card mb-4">
+        <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h1 class="h3 mb-1">Inventory Management</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shell-card mb-4">
+        <div class="card-body p-4">
+            <form class="row g-3 align-items-end" method="GET">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Product name">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="active" @selected(request('status') === 'active')>Active</option>
+                        <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="lowStock" name="low_stock" value="1" @checked(request('low_stock'))>
+                        <label class="form-check-label" for="lowStock">Low stock only</label>
+                    </div>
+                </div>
+                <div class="col-12 col-md-auto ms-auto d-flex flex-nowrap gap-2 justify-content-end">
+                    <button class="btn btn-dark" type="submit">Filter</button>
+                    <a href="{{ route('admin.inventory.index') }}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shell-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Vendor</th>
+                        <th>Stock</th>
+                        <th>Unit</th>
+                        <th>Threshold</th>
+                        <th>Updated</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($inventories as $inventory)
+                        <tr>
+                            <td class="fw-semibold">{{ $inventory->product?->name_with_source ?? '-' }}</td>
+                            <td>{{ $inventory->product?->vendor?->vendor_name ?? '-' }}</td>
+                            <td>{{ $inventory->stock_quantity }}</td>
+                            <td>{{ $inventory->unit ?? '-' }}</td>
+                            <td>{{ $inventory->low_stock_threshold ?? '-' }}</td>
+                            <td>{{ \App\Support\StoreDate::dateTime($inventory->updated_at) }}</td>
+                            <td class="text-end">
+                                @canRoute('admin.inventory.destroy', 'DELETE')
+                                    <form action="{{ route('admin.inventory.destroy', $inventory) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this inventory record?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Delete inventory record" title="Delete inventory record">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                @endcanRoute
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-secondary py-5">No inventory records found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="card-body">
+            @include('partials.pagination', ['paginator' => $inventories])
+        </div>
+    </div>
+@endsection

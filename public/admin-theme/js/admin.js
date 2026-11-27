@@ -1,0 +1,362 @@
+const sidebar = document.getElementById('sidebar');
+const content = document.getElementById('content');
+const topbar = document.getElementById('topbar');
+const toggleBtn = document.getElementById('toggleBtn');
+const mobileBtn = document.getElementById('mobileBtn');
+const overlay = document.getElementById('overlay');
+const deleteConfirmModalEl = document.getElementById('adminDeleteConfirmModal');
+const deleteConfirmMessageEl = document.getElementById('adminDeleteConfirmMessage');
+const deleteConfirmButtonEl = document.getElementById('adminDeleteConfirmButton');
+const backConfirmModalEl = document.getElementById('adminBackConfirmModal');
+const backConfirmMessageEl = document.getElementById('adminBackConfirmMessage');
+const backConfirmButtonEl = document.getElementById('adminBackConfirmButton');
+const deleteConfirmModal = deleteConfirmModalEl && window.bootstrap
+    ? new bootstrap.Modal(deleteConfirmModalEl)
+    : null;
+const backConfirmModal = backConfirmModalEl && window.bootstrap
+    ? new bootstrap.Modal(backConfirmModalEl)
+    : null;
+let pendingDeleteForm = null;
+let pendingBackLink = null;
+window.__adminBypassBeforeUnload = false;
+
+const hideAdminPageLoader = () => {
+    const loader = document.querySelector('.admin-page-loader');
+    if (!loader) {
+        return;
+    }
+
+    window.setTimeout(() => {
+        loader.classList.add('is-hidden');
+        window.setTimeout(() => loader.remove(), 300);
+    }, 450);
+};
+
+if (document.readyState === 'complete') {
+    hideAdminPageLoader();
+} else {
+    window.addEventListener('load', hideAdminPageLoader, { once: true });
+}
+
+const setDesktopSidebarState = (collapsed) => {
+    sidebar?.classList.toggle('collapsed', collapsed);
+    content?.classList.toggle('full', collapsed);
+    topbar?.classList.toggle('full', collapsed);
+    toggleBtn?.setAttribute('aria-expanded', String(!collapsed));
+};
+
+if (localStorage.getItem('adminSidebar') === 'hidden') {
+    localStorage.setItem('adminSidebar', 'expanded');
+}
+
+if (localStorage.getItem('adminSidebar') === 'collapsed') {
+    setDesktopSidebarState(true);
+}
+
+if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+        const isCollapsed = !sidebar?.classList.contains('collapsed');
+
+        setDesktopSidebarState(isCollapsed);
+        localStorage.setItem('adminSidebar', isCollapsed ? 'collapsed' : 'expanded');
+    });
+}
+
+if (mobileBtn) {
+    mobileBtn.addEventListener('click', () => {
+        const isOpen = sidebar?.classList.toggle('mobile-show') ?? false;
+
+        overlay?.classList.toggle('show', isOpen);
+        mobileBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+}
+
+if (overlay) {
+    overlay.addEventListener('click', () => {
+        sidebar?.classList.remove('mobile-show');
+        overlay.classList.remove('show');
+        mobileBtn?.setAttribute('aria-expanded', 'false');
+    });
+}
+
+const isDeleteForm = (form) => {
+    if (!form || form.dataset.confirmed === 'true') {
+        return false;
+    }
+
+    if (form.classList.contains('js-confirm-delete') || form.dataset.confirmMessage) {
+        return true;
+    }
+
+    if (form.getAttribute('onsubmit')?.includes('confirm(')) {
+        return true;
+    }
+
+    const methodField = form.querySelector('input[name="_method"]');
+    return methodField?.value?.toUpperCase() === 'DELETE';
+};
+
+const deleteConfirmTitleEl = deleteConfirmModalEl?.querySelector('.modal-title');
+const defaultDeleteConfirmTitle = deleteConfirmTitleEl?.textContent || 'Confirm Delete';
+const defaultDeleteConfirmButtonText = deleteConfirmButtonEl?.textContent || 'Delete';
+
+const confirmMessageForForm = (form) => {
+    if (form.dataset.confirmMessage) {
+        return form.dataset.confirmMessage;
+    }
+
+    const inline = form.getAttribute('onsubmit')?.match(/confirm\(\s*(['"])(.*?)\1\s*\)/);
+
+    return inline ? inline[2] : 'Delete this item?';
+};
+
+const isDeleteAction = (form, message) => form.classList.contains('js-confirm-delete')
+    || form.querySelector('input[name="_method"]')?.value?.toUpperCase() === 'DELETE'
+    || /^\s*(delete|remove)\b/i.test(message);
+
+const openDeleteConfirm = (form) => {
+    if (!deleteConfirmModal || !deleteConfirmMessageEl || !deleteConfirmButtonEl) {
+        return false;
+    }
+
+    const message = confirmMessageForForm(form);
+    const isDelete = isDeleteAction(form, message);
+
+    pendingDeleteForm = form;
+    deleteConfirmMessageEl.textContent = message;
+    if (deleteConfirmTitleEl) {
+        deleteConfirmTitleEl.textContent = form.dataset.confirmTitle || (isDelete ? defaultDeleteConfirmTitle : 'Please Confirm');
+    }
+    deleteConfirmButtonEl.textContent = form.dataset.confirmButton || (isDelete ? defaultDeleteConfirmButtonText : 'Confirm');
+    deleteConfirmModal.show();
+    return true;
+};
+
+if (deleteConfirmButtonEl) {
+    deleteConfirmButtonEl.addEventListener('click', () => {
+        if (!pendingDeleteForm) {
+            return;
+        }
+
+        const form = pendingDeleteForm;
+        pendingDeleteForm = null;
+        form.dataset.confirmed = 'true';
+        deleteConfirmModal?.hide();
+        form.submit();
+    });
+}
+
+if (deleteConfirmModalEl) {
+    deleteConfirmModalEl.addEventListener('hidden.bs.modal', () => {
+        pendingDeleteForm = null;
+        if (deleteConfirmTitleEl) {
+            deleteConfirmTitleEl.textContent = defaultDeleteConfirmTitle;
+        }
+        if (deleteConfirmButtonEl) {
+            deleteConfirmButtonEl.textContent = defaultDeleteConfirmButtonText;
+        }
+    });
+}
+
+window.adminConfirm = (message, options = {}) => new Promise((resolve) => {
+    if (!deleteConfirmModal || !deleteConfirmMessageEl || !deleteConfirmButtonEl) {
+        resolve(window.confirm(message || 'Are you sure?'));
+        return;
+    }
+
+    const titleEl = deleteConfirmModalEl.querySelector('.modal-title');
+    const cancelButton = deleteConfirmModalEl.querySelector('[data-bs-dismiss="modal"]');
+    const defaultTitle = titleEl?.textContent || 'Confirm';
+    const defaultConfirmText = deleteConfirmButtonEl.textContent || 'Confirm';
+    const defaultConfirmClass = deleteConfirmButtonEl.className;
+    let settled = false;
+
+    const cleanup = () => {
+        deleteConfirmButtonEl.removeEventListener('click', onConfirm);
+        deleteConfirmModalEl.removeEventListener('hidden.bs.modal', onHidden);
+        if (titleEl) {
+            titleEl.textContent = defaultTitle;
+        }
+        deleteConfirmButtonEl.textContent = defaultConfirmText;
+        deleteConfirmButtonEl.className = defaultConfirmClass;
+        pendingDeleteForm = null;
+    };
+
+    const finish = (confirmed) => {
+        if (settled) {
+            return;
+        }
+
+        settled = true;
+        cleanup();
+        resolve(confirmed);
+    };
+
+    const onConfirm = () => {
+        deleteConfirmModal.hide();
+        finish(true);
+    };
+
+    const onHidden = () => {
+        finish(false);
+    };
+
+    pendingDeleteForm = null;
+    if (titleEl && options.title) {
+        titleEl.textContent = options.title;
+    }
+    deleteConfirmMessageEl.textContent = message || 'Are you sure?';
+    deleteConfirmButtonEl.textContent = options.confirmText || 'Confirm';
+    deleteConfirmButtonEl.className = defaultConfirmClass;
+    if (options.confirmClass) {
+        deleteConfirmButtonEl.classList.remove('btn-primary', 'btn-danger', 'btn-dark');
+        deleteConfirmButtonEl.classList.add(options.confirmClass);
+    }
+    cancelButton?.focus?.();
+
+    deleteConfirmButtonEl.addEventListener('click', onConfirm);
+    deleteConfirmModalEl.addEventListener('hidden.bs.modal', onHidden);
+    deleteConfirmModal.show();
+});
+
+const openBackConfirm = (link, message) => {
+    if (!backConfirmModal || !backConfirmMessageEl || !backConfirmButtonEl) {
+        return false;
+    }
+
+    pendingBackLink = link;
+    backConfirmMessageEl.textContent = message || link.dataset.confirmMessage || 'Are you sure you want to go back without editing?';
+    backConfirmModal.show();
+    return true;
+};
+
+const isNavigableAdminLink = (link) => {
+    if (!link || !link.href || link.target === '_blank' || link.hasAttribute('download')) {
+        return false;
+    }
+
+    if (link.dataset.bsToggle || link.getAttribute('role') === 'button') {
+        return false;
+    }
+
+    const url = new URL(link.href, window.location.href);
+    if (url.origin !== window.location.origin) {
+        return false;
+    }
+
+    return !(url.pathname === window.location.pathname && url.search === window.location.search && url.hash);
+};
+
+if (backConfirmButtonEl) {
+    backConfirmButtonEl.addEventListener('click', () => {
+        if (!pendingBackLink) {
+            return;
+        }
+
+        const link = pendingBackLink;
+        pendingBackLink = null;
+        window.__adminBypassBeforeUnload = true;
+        backConfirmModal?.hide();
+        window.location.href = link.href;
+    });
+}
+
+if (backConfirmModalEl) {
+    backConfirmModalEl.addEventListener('hidden.bs.modal', () => {
+        pendingBackLink = null;
+    });
+}
+
+document.addEventListener('submit', (event) => {
+    const form = event.target instanceof HTMLFormElement ? event.target : event.target.closest('form');
+    if (!isDeleteForm(form)) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (openDeleteConfirm(form)) {
+        return;
+    }
+
+    if (window.confirm(form.dataset.confirmMessage || 'Delete this item?')) {
+        form.dataset.confirmed = 'true';
+        form.submit();
+    }
+}, true);
+
+document.querySelectorAll('form[data-dirty-check]').forEach((form) => {
+    let isDirty = false;
+    let isSubmitting = false;
+
+    const markDirty = () => {
+        isDirty = true;
+    };
+
+    const confirmNavigation = (event, link, forceConfirm = false) => {
+        if (isSubmitting || link.dataset.dirtyConfirmed === 'true') {
+            return;
+        }
+
+        if (!forceConfirm && !isDirty) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        const message = isDirty
+            ? 'You have unsaved changes. Are you sure you want to leave without saving?'
+            : 'Are you sure you want to go back without editing?';
+
+        if (openBackConfirm(link, message)) {
+            return;
+        }
+
+        if (!window.confirm(message)) {
+            return;
+        }
+
+        window.__adminBypassBeforeUnload = true;
+        link.dataset.dirtyConfirmed = 'true';
+        window.location.href = link.href;
+    };
+
+    form.addEventListener('input', markDirty);
+    form.addEventListener('change', markDirty);
+    form.addEventListener('submit', () => {
+        isSubmitting = true;
+    });
+
+    document.querySelectorAll('[data-dirty-back]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            confirmNavigation(event, link, true);
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href]');
+        if (!isNavigableAdminLink(link)) {
+            return;
+        }
+
+        confirmNavigation(event, link);
+    }, true);
+});
+
+document.querySelectorAll('.alert.alert-success:not(.admin-flash-message), .alert.alert-danger:not(.admin-flash-message)').forEach((alert) => {
+    if (alert.querySelector('[data-bs-dismiss="alert"], .btn-close')) {
+        return;
+    }
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'btn-close';
+    closeButton.setAttribute('aria-label', 'Close');
+    closeButton.addEventListener('click', () => alert.remove());
+
+    alert.classList.add('alert-dismissible', 'fade', 'show');
+    alert.append(closeButton);
+});
